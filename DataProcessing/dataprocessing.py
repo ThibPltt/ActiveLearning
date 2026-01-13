@@ -40,8 +40,8 @@ def extract_and_name_frames(video_path, csv_path, output_root):
 
 # --- SCRIPT PRINCIPAL ---
 
-input_folder = "data/Domain_A"          # Dossier contenant vos mp4 et csv
-output_folder = "processed_frames/Domain_A"
+input_folder = "data/Domain_B"          # Dossier contenant vos mp4 et csv
+output_folder = "processed_frames/Domain_B"
 
 # 1. Trouver toutes les vidéos
 video_files = glob.glob(os.path.join(input_folder, "*.mp4"))

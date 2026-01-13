@@ -23,8 +23,8 @@ CAMERA_INDEX = 0
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 os.makedirs("data", exist_ok=True)
 
-video_path = f"data/video_{timestamp}.mp4"
-csv_path = f"data/coords_{timestamp}.csv"
+video_path = f"data/Domain_B/video_{timestamp}.mp4"
+csv_path = f"data/Domain_B/coords_{timestamp}.csv"
 
 # ======================
 # Initialize camera
