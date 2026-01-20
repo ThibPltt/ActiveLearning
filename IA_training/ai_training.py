@@ -5,6 +5,7 @@ from pathlib import Path
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoFeatureExtractor, ResNetForImageClassification
+import time
 
 # ==========================================
 # 1. CONFIGURATION ET CHEMINS
@@ -74,7 +75,7 @@ model = ResNetForImageClassification.from_pretrained(
 ).to(device)
 
 dataset = ImageRegressionDataset(all_image_paths, processor)
-dataloader = DataLoader(dataset, batch_size=8, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=10, shuffle=True)
 
 # ==========================================
 # 4. BOUCLE D'ENTRAÎNEMENT SIMPLIFIÉE
@@ -83,9 +84,10 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
 criterion = nn.MSELoss() # Perte standard pour la régression
 
 model.train()
-epochs = 5
+epochs = 20
 
 print("Début de l'entraînement...")
+start_time = time.time()
 for epoch in range(epochs):
     epoch_loss = 0
     for batch_idx, (pixel_values, targets) in enumerate(dataloader):
@@ -108,6 +110,7 @@ for epoch in range(epochs):
         
     print(f"Époque [{epoch+1}/{epochs}] - Perte Moyenne: {epoch_loss/len(dataloader):.6f}")
 
+end_time = time.time()
 print("Entraînement terminé.")
 
 # --- SAUVEGARDE ---
@@ -123,3 +126,6 @@ model.save_pretrained(output_dir)
 processor.save_pretrained(output_dir)
 
 print(f"Modèle sauvegardé avec succès dans : {output_dir}")
+
+elapsed_time = end_time - start_time
+print(f"Temps écoulé : {elapsed_time} secondes")
