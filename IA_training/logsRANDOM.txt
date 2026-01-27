@@ -1,0 +1,31 @@
+--- PROTOCOLE JOINT (A + x% B) ---
+Base Fixe (Domaine A Train) : 690 images
+Pool Variable (Domaine B)   : 8202 images
+Test Set B (Evaluation)     : 2051 images
+----------------------------------
+
+=== ETAPE 1 : REFERENCE (ZERO-SHOT) ===
+[>] Entrainement Baseline (A uniquement)...
+    [OK] Zero-Shot (Train A -> Test B) : Loss = 0.20826
+
+=== ETAPE 2 : BENCHMARK JOINT (TRAIN A + RANDOM B) ===
+
+[>] RATIO 1.0% (A + 82 img de B) -- Etape 1/6
+    Run 1: Loss = 0.09780
+    Run 2: Loss = 0.09586
+    Run 3: Loss = 0.14762
+    [OK] Moyenne: 0.11376 (+/- 0.02396)
+
+[>] RATIO 2.0% (A + 164 img de B) -- Etape 2/6
+    Run 1: Loss = 0.06252
+    Run 2: Loss = 0.06369
+    Run 3: Loss = 0.05661
+    [OK] Moyenne: 0.06094 (+/- 0.00310)
+
+[>] RATIO 5.0% (A + 410 img de B) -- Etape 3/6
+    Run 1: Loss = 0.03924
+    Run 2: Loss = 0.03888
+    Run 3: Loss = 0.04373
+    [OK] Moyenne: 0.04062 (+/- 0.00221)
+
+[>] RATIO 10.0% (A + 820 img de B) -- Etape 4/6
