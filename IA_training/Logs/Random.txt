@@ -1,0 +1,5 @@
+--- Recherche des images dans : C:\Users\zeryk\Documents\ENSIM\5A-2025_2026\ActiveAndInteractiveLearning\TD\ActiveLearning\processed_frames\Domain_B ---
+-> 10253 images trouvées dans 12 dossiers.
+-> Pool d'Active Learning : 8202 images
+-> Test Set (Fixe)        : 2051 images
+------------------------------------------------------
