@@ -9,6 +9,7 @@ from transformers import AutoImageProcessor, ResNetForImageClassification, loggi
 import random
 import sys
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 # ==========================================
 # 0. CONFIGURATION WINDOWS SAFE
@@ -215,3 +216,48 @@ for r in RATIOS:
     print(f"{label:<30} | {m:.5f}         | {s:.5f}")
 
 print("-" * 65)
+
+# ==========================================
+# 7. GENERATION DU GRAPHIQUE (STYLE ACTIVE LEARNING)
+# ==========================================
+print("\n[>] Génération du graphique 'benchmark_random.png'...")
+
+# 1. Préparation des données
+# On convertit les ratios en pourcentages pour l'axe X (ex: 0.01 -> 1.0)
+x_ratios = [r * 100 for r in RATIOS] 
+y_means = [results[r][0] for r in RATIOS]
+y_stds = [results[r][1] for r in RATIOS]
+
+# Création de la figure
+plt.figure(figsize=(10, 6))
+
+# 2. Tracer la Baseline (Ligne rouge pointillée horizontale = 0% de B)
+# C'est votre point de départ, la performance sans aucune donnée B
+plt.axhline(y=loss_zero_shot, color='red', linestyle='--', linewidth=1.5, label=f'Baseline (0% B): {loss_zero_shot:.4f}')
+
+# 3. Tracer les lignes verticales (Grille pour les ratios)
+# Ce sont les pointillés verticaux de votre image de référence
+for x in x_ratios:
+    plt.axvline(x=x, color='gray', linestyle=':', alpha=0.5)
+
+# 4. Tracer la courbe "Random" (Ligne grise avec barres d'erreur)
+# fmt='-o' fait une ligne avec des points, color='gray' pour imiter votre image
+plt.errorbar(x_ratios, y_means, yerr=y_stds, 
+             fmt='-o', color='gray', ecolor='black', capsize=5, linewidth=2, 
+             label='Random Sampling')
+
+# 5. Mise en forme du graphique
+plt.title("Evolution de la Loss selon la quantité de données ajoutées (Domaine B)")
+plt.xlabel("Pourcentage de données du Domaine B ajoutées (%)")
+plt.ylabel("Loss (MSE) - Plus bas est meilleur")
+plt.legend()
+plt.grid(True, which='major', linestyle='-', alpha=0.2)
+
+# Astuce : On inverse pas l'axe Y car c'est une Loss, 
+# mais visuellement la courbe va descendre "en toboggan".
+
+# Sauvegarde
+output_plot = "benchmark_random.png"
+plt.savefig(output_plot, dpi=300)
+print(f"[OK] Graphique sauvegardé : {output_plot}")
+plt.close()

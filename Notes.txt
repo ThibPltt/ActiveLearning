@@ -1,0 +1,19 @@
+Entraînement avec RANDOM pour avoir une ligne de base 
+-> résultat dans losRANDOM2.txt + benchmark_random.png
+
+Maintenant, ajout d'une stratégie d'Uncertainty Sampling -> Dropout
+-> 75% domaine A Train et 25% Test
+-> 80% domaine B (AL) et 20% Test
+
+-> random meilleur que Dropout
+
+A faire :
+Uncertainty : Data Augmentation
+
+Diversity : Cluster-based + predit its own errors ?
+
+Puis mix des meilleurs
+
+--> TOUJOURS
+-> 75% domaine A Train et 25% Test
+-> 80% domaine B (AL) et 20% Test
