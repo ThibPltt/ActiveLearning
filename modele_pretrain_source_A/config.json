@@ -35,5 +35,5 @@
     "stage3",
     "stage4"
   ],
-  "transformers_version": "4.57.4"
+  "transformers_version": "5.0.0"
 }
