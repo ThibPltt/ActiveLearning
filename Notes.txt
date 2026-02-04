@@ -15,12 +15,15 @@ puis test B sans entraînement
 
 random : prendre 80% au pif du domaine B (Active Learning)
 
+-> split en plusieurs dossiers les train set Domain A, test set Domain A, AL set Domain B et test set Domain B
+
+PUIS ON FAIT UNE COMPARAISON (on test le domaine A et le domaine B et on regarde la loss)
 Baseline Domain A (test : 0.03340)
 Baseline Domain B (test : 0.22498)
 
    -> [OK] CONFIRMÉ : Le modèle est perdu sur B.
    -> Domain Gap = 6.7x plus d'erreur sur B que sur A.
-
+   -> normal que la loss de A soit moins grande -> déjà entraîné sur A (quelques données) alors que B jamais train (AL) encore et donc fait au pif
 
 INCREMENTAL -> chaque ratio on reprend les % précédents (ex : dans 50% y a tous les 1% 2% 5% 20%)
 
@@ -29,19 +32,26 @@ Refaire les entraînements de random et Dropout
 
 -> LES GRAPHES PRENNENET BIEN EN COMPTE LA LOSS DE TEST(20%) ET PAS DE TRAIN
 
-ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 train random
 python.exe randomTraining.py > logsRANDOM2.txt 2>&1
 
-Dropout à 50% et 25% pour visualiser la différence
+Dropout à 50% 
 Graph en Scipy et pas matplotlib
 
 Puis test à chaque ratio du domaine B
-PUIS
+-> sur les graphiques, chaque point de ratio sont les évaluations des TEST SET (et surtout pas les train !!!) et ils prouvent que Dropout moins bien que random
+-> loss décrois (AL) mais pas suffisamment pour être meilleur que random
+
+SUR CHAQUE GRAPHIQUE ON A BIEN L'ECART TYPE QUI EST REPRESENTE PAR LES BARRES VERTICALES -> on regarde si ce n'est pas juste un coup de chance mais réel (3 répétitions pour vérifier)
+
+Dropout à 25% pour visualiser la différence
+
+-> un peu moins bien que 50% donc stratégie qui ne fonctionne pas
+
+ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 A faire :
-Supp le point dans l'Etat de l'art avant les [] et ne jamais commencer une phrase par une citation.
+
 Uncertainty : Data Augmentation
 
 Diversity : Cluster-based + predit its own errors ???
@@ -52,6 +62,8 @@ Puis mix des meilleurs
 -> 75% domaine A Train et 25% Test
 -> 80% domaine B (AL) et 20% Test
 
+
+Supp le point dans l'Etat de l'art avant les [] et ne jamais commencer une phrase par une citation.
 
 perspectives : Grad-Cam (resnet-18) -> heatmap des éléments qui sont importants
 -> la où il va mettre plus de poids

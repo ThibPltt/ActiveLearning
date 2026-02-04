@@ -38,14 +38,14 @@ N_REPEATS = 3
 # Config Dropout
 MC_PASSES = 10           
 BATCH_SIZE_UNCERTAINTY = 64
-DROPOUT_RATE = 0.5       
+DROPOUT_RATE = 0.25       
 
 EPOCHS = 20      
 BATCH_SIZE = 10
 LEARNING_RATE = 1e-4 
 
 # Dossier de sauvegarde
-SAVE_DIR = "best_models_dropout"
+SAVE_DIR = "best_models_dropout_0.25"
 if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 
 # ==========================================
@@ -268,58 +268,67 @@ for run_idx in range(N_REPEATS):
             print(f"    [INFO]     {target_ratio*100}% Loss: {loss:.5f} (Record: {best_losses[target_ratio]:.5f})")
 
 # ==========================================
-# 5. GRAPHIQUE COMPARATIF LISSÉ (SCIPY)
+# 5. GRAPHIQUE FINAL COMPARATIF
 # ==========================================
-print("\n[>] Génération du graphique 'benchmark_comparatif_scipy.png'...")
+print("\n[>] Génération du graphique 'benchmark_dropout_0.25.png'...")
 
 final_ratios = [0.0] + TARGET_RATIOS
-dropout_means = [np.mean(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
-dropout_stds = [np.std(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
+# Moyenne pour le 0.25 (ce qu'on teste)
+dropout_025_means = [np.mean(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
+dropout_025_stds  = [np.std(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
 
-# Vos valeurs Random (A remplacer par les vraies après la fin de randomTraining.py)
-# Exemple de placeholders :
-random_means = [0.19335, 0.09094, 0.06512, 0.03685, 0.02530, 0.01946, 0.01483]
-min_len = min(len(random_means), len(final_ratios))
+# --- BENCHMARKS (CHAMPIONS) ---
+random_best_values = [0.19335, 0.09094, 0.06512, 0.03685, 0.02530, 0.01946, 0.01483]
+dropout_05_best_values = [0.19037, 0.12551, 0.08792, 0.05607, 0.03679, 0.02869, 0.01809]
+
+min_len = min(len(random_best_values), len(final_ratios))
 x_vals = np.array([r * 100 for r in final_ratios[:min_len]])
 
 plt.figure(figsize=(12, 7))
 
-# LISSAGE SCIPY POUR RANDOM
+# 1. RANDOM (Gris - Pointillés)
 try:
     x_smooth = np.linspace(x_vals.min(), x_vals.max(), 300)
-    spl_rand = make_interp_spline(x_vals, random_means[:min_len], k=2)
+    spl_rand = make_interp_spline(x_vals, random_best_values[:min_len], k=2)
     y_smooth_rand = np.clip(spl_rand(x_smooth), 0, None)
-    plt.plot(x_smooth, y_smooth_rand, color='gray', linestyle='-', linewidth=2, label='Random (Lissé)', alpha=0.6)
+    plt.plot(x_smooth, y_smooth_rand, color='gray', linestyle='--', linewidth=2, label='Random (Best)', alpha=0.7)
 except:
-    plt.plot(x_vals, random_means[:min_len], color='gray', linestyle='-', label='Random')
+    plt.plot(x_vals, random_best_values[:min_len], color='gray', linestyle='--', label='Random (Best)')
+plt.scatter(x_vals, random_best_values[:min_len], color='gray', marker='x')
 
-# LISSAGE SCIPY POUR DROPOUT
+# 2. DROPOUT 0.5 (Rouge - Pointillés)
 try:
-    spl_drop = make_interp_spline(x_vals, dropout_means[:min_len], k=2)
-    y_smooth_drop = np.clip(spl_drop(x_smooth), 0, None)
-    plt.plot(x_smooth, y_smooth_drop, color='blue', linestyle='-', linewidth=3, label='Dropout (Lissé)')
+    spl_05 = make_interp_spline(x_vals, dropout_05_best_values[:min_len], k=2)
+    y_smooth_05 = np.clip(spl_05(x_smooth), 0, None)
+    plt.plot(x_smooth, y_smooth_05, color='red', linestyle='--', linewidth=2, label='Dropout 0.5 (Best)', alpha=0.7)
 except:
-    plt.plot(x_vals, dropout_means[:min_len], color='blue', linestyle='-', label='Dropout')
+    plt.plot(x_vals, dropout_05_best_values[:min_len], color='red', linestyle='--', label='Dropout 0.5 (Best)')
+plt.scatter(x_vals, dropout_05_best_values[:min_len], color='red', marker='x')
 
-# Points réels
-plt.scatter(x_vals, random_means[:min_len], color='gray', alpha=0.5)
-plt.errorbar(x_vals, dropout_means[:min_len], yerr=dropout_stds[:min_len], fmt='o', color='navy', capsize=5, label='Mesures Dropout')
+# 3. DROPOUT 0.25 (Vert - Ligne Pleine) - NOTRE TEST
+try:
+    spl_025 = make_interp_spline(x_vals, dropout_025_means[:min_len], k=2)
+    y_smooth_025 = np.clip(spl_025(x_smooth), 0, None)
+    plt.plot(x_smooth, y_smooth_025, color='green', linestyle='-', linewidth=3, label=f'Dropout 0.25 (Moyenne)')
+except:
+    plt.plot(x_vals, dropout_025_means[:min_len], color='green', linestyle='-', label=f'Dropout 0.25 (Moyenne)')
 
-plt.title(f"Comparaison Lissée : Random vs Dropout ({N_REPEATS} runs)")
+plt.errorbar(x_vals, dropout_025_means[:min_len], yerr=dropout_025_stds[:min_len], fmt='o', color='darkgreen', capsize=5)
+
+plt.title(f"Benchmark Final : Random vs Dropout 0.5 vs Dropout 0.25")
 plt.xlabel("Pourcentage de données du Domaine B ajoutées (%)")
 plt.ylabel("Loss MSE (Plus bas est meilleur)")
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.3)
-plt.savefig("benchmark_comparatif_scipy.png", dpi=300)
 
-# ==========================================
-# 6. CSV OUTPUT
-# ==========================================
-csv_filename = "resultats_dropout.csv"
+# Sauvegardes
+plt.savefig(f"benchmark_dropout_0.25.png", dpi=300)
+
+csv_filename = f"resultats_dropout_{DROPOUT_RATE}.csv"
 with open(csv_filename, 'w', newline='') as f:
     writer = csv.writer(f)
-    writer.writerow(["Ratio", "Dropout Mean", "Dropout Std"] + [f"Run {i+1}" for i in range(N_REPEATS)])
+    writer.writerow(["Ratio", "Mean", "Std"] + [f"Run {i+1}" for i in range(N_REPEATS)])
     for r in final_ratios:
         vals = aggregated_results[r]
         writer.writerow([r, np.mean(vals), np.std(vals)] + [f"{v:.5f}" for v in vals])
-print(f"[OK] Terminé. CSV: {csv_filename}")
+print(f"[OK] Terminé. Fichiers : {csv_filename} et benchmark_dropout_0.25.png")
