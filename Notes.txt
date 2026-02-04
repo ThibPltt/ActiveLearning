@@ -7,13 +7,51 @@ Maintenant, ajout d'une stratégie d'Uncertainty Sampling -> Dropout
 
 -> random meilleur que Dropout
 
+Faut que test A très bon et test B très nul (domain B sans train) il faut définir les dossiers
+test sur 1/4 du domaine A
+puis test B sans entraînement
+
+-> on entraine 75% A et on test 25% A puis test 20% B
+
+random : prendre 80% au pif du domaine B (Active Learning)
+
+Baseline Domain A (test : 0.03060)
+Baseline Domain B (test : 0.17154)
+
+   -> [OK] CONFIRMÉ : Le modèle est perdu sur B.
+   -> Domain Gap = 5.6x plus d'erreur sur B que sur A.
+
+
+INCREMENTAL -> chaque ratio on reprend les % précédents (ex : dans 50% y a tous les 1% 2% 5% 20%)
+
+Ajout de sauvegarde de chaque meilleur modèle entre chaque ratio de chaque run (meilleur 5%, 10% etc.)
+Refaire les entraînements de random et Dropout
+
+-> LES GRAPHES PRENNENET BIEN EN COMPTE LA LOSS DE TEST(20%) ET PAS DE TRAIN
+
+ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+train random
+python.exe randomTraining.py > logsRANDOM2.txt 2>&1
+
+Dropout à 50% et 25% pour visualiser la différence
+Graph en Scipy et pas matplotlib
+
+Puis test à chaque ratio du domaine B
+PUIS
+
 A faire :
+Supp le point dans l'Etat de l'art avant les [] et ne jamais commencer une phrase par une citation.
 Uncertainty : Data Augmentation
 
-Diversity : Cluster-based + predit its own errors ?
+Diversity : Cluster-based + predit its own errors ???
 
 Puis mix des meilleurs
 
 --> TOUJOURS
 -> 75% domaine A Train et 25% Test
 -> 80% domaine B (AL) et 20% Test
+
+
+perspectives : Grad-Cam (resnet-18) -> heatmap des éléments qui sont importants
+-> la où il va mettre plus de poids
