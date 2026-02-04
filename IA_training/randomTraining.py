@@ -14,6 +14,12 @@ import shutil
 import csv
 from scipy.interpolate import make_interp_spline # <--- L'AJOUT SCIPY
 
+print(f"CUDA disponible ? : {torch.cuda.is_available()}")
+if torch.cuda.is_available():
+    print(f"Nom du GPU : {torch.cuda.get_device_name(0)}")
+else:
+    print("ATTENTION : Le script tourne sur le CPU (Lent) !")
+
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
@@ -107,7 +113,7 @@ except:
     processor = ConvNextImageProcessor.from_pretrained(MODEL_NAME)
 
 ds_test_B = ImageRegressionDataset(test_files_B, processor)
-loader_test_B = DataLoader(ds_test_B, batch_size=BATCH_SIZE, shuffle=False)
+loader_test_B = DataLoader(ds_test_B, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True)
 
 # ==========================================
 # 3. FONCTIONS D'ENTRAINEMENT
@@ -121,7 +127,7 @@ def train_model(train_files, desc_bar):
     criterion = nn.MSELoss()
     
     train_ds = ImageRegressionDataset(train_files, processor)
-    train_ld = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
+    train_ld = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     
     for _ in tqdm(range(EPOCHS), desc=desc_bar, leave=False, ascii=True):
         for pv, targets in train_ld:

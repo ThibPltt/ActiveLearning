@@ -8,7 +8,7 @@ from tqdm import tqdm
 # 1. CORRECTION DU CHEMIN RACINE
 # ==========================================
 # C'est ICI que je me trompais avant. J'ai rajouté "ActiveLearning".
-project_root = Path(r"C:\Users\Thibaut\Desktop\ENSIM\5A_INFO\ACTIVE_INTERACTIVE_LEARNING\PROJET\ActiveLearning")
+project_root = Path(r"C:\Users\Megaport\Desktop\PROJET_AL\ActiveLearning")
 
 source_dir = project_root / "processed_frames"
 dest_root = project_root.parent / "FINAL_DATASET" # On le met à la racine du PROJET pour être propre

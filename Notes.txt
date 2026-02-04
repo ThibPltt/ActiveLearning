@@ -15,11 +15,11 @@ puis test B sans entraînement
 
 random : prendre 80% au pif du domaine B (Active Learning)
 
-Baseline Domain A (test : 0.03060)
-Baseline Domain B (test : 0.17154)
+Baseline Domain A (test : 0.03340)
+Baseline Domain B (test : 0.22498)
 
    -> [OK] CONFIRMÉ : Le modèle est perdu sur B.
-   -> Domain Gap = 5.6x plus d'erreur sur B que sur A.
+   -> Domain Gap = 6.7x plus d'erreur sur B que sur A.
 
 
 INCREMENTAL -> chaque ratio on reprend les % précédents (ex : dans 50% y a tous les 1% 2% 5% 20%)

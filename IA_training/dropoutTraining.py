@@ -12,15 +12,23 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import shutil
 import csv
-from scipy.interpolate import make_interp_spline # <--- SCIPY
+from scipy.interpolate import make_interp_spline 
 
 # ==========================================
-# 0. CONFIGURATION
+# 0. CONFIGURATION (OPTIMISÉE GPU RTX 2070)
 # ==========================================
 logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Vérification GPU
+if torch.cuda.is_available():
+    DEVICE = torch.device("cuda")
+    print(f">>> GPU ACTIVÉ : {torch.cuda.get_device_name(0)}")
+    torch.backends.cudnn.benchmark = True 
+else:
+    DEVICE = torch.device("cpu")
+    print(">>> ATTENTION : CPU UNIQUEMENT (LENT)")
+
 MODEL_NAME = "microsoft/resnet-18"
 
 # Ratios d'Active Learning
@@ -29,13 +37,14 @@ N_REPEATS = 3
 
 # Config Dropout
 MC_PASSES = 10           
-BATCH_SIZE_UNCERTAINTY = 32 
+BATCH_SIZE_UNCERTAINTY = 64
 DROPOUT_RATE = 0.5       
 
 EPOCHS = 20      
-BATCH_SIZE = 10  
+BATCH_SIZE = 10
 LEARNING_RATE = 1e-4 
 
+# Dossier de sauvegarde
 SAVE_DIR = "best_models_dropout"
 if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 
@@ -43,18 +52,27 @@ if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 # 1. DATASET & CHEMINS (FINAL_DATASET)
 # ==========================================
 current_script_dir = Path(__file__).resolve().parent
+
+# ON REMONTE DE 2 NIVEAUX (IA_training -> ActiveLearning -> PROJET -> FINAL_DATASET)
 dataset_dir = current_script_dir.parent.parent / "FINAL_DATASET"
 
 print(f"--- DIAGNOSTIC CHEMINS ---")
-print(f"Script situé dans : {current_script_dir}")
-print(f"Dossier Dataset visé : {dataset_dir}")
+print(f"Script : {current_script_dir}")
+print(f"Dataset: {dataset_dir}")
 
 dir_train_A = dataset_dir / "Domain_A_Train"
 dir_pool_B  = dataset_dir / "Domain_B_Pool"
 dir_test_B  = dataset_dir / "Domain_B_Test"
 
+# Vérification immédiate
 if not dir_train_A.exists():
-    raise FileNotFoundError(f"Impossible de trouver {dir_train_A}.")
+    print(f"\n!!! ERREUR CRITIQUE !!!")
+    print(f"Le dossier {dir_train_A} est introuvable.")
+    # Tentative secours (Chemin absolu si besoin)
+    # dataset_dir = Path(r"C:\Users\Megaport\Desktop\PROJET_AL\FINAL_DATASET")
+    # dir_train_A = dataset_dir / "Domain_A_Train"
+    # ...
+    raise FileNotFoundError("Impossible de localiser FINAL_DATASET.")
 
 def load_images(folder):
     exts = ["*.jpg", "*.JPG", "*.png", "*.jpeg"]
@@ -207,6 +225,9 @@ for run_idx in range(N_REPEATS):
         if os.path.exists(save_path): shutil.rmtree(save_path)
         model_current.save_pretrained(save_path)
         processor.save_pretrained(save_path)
+        print(f"    [NEW BEST] Baseline sauvegardée (Loss: {loss_base:.5f})")
+    else:
+        print(f"    [INFO]     Baseline Loss: {loss_base:.5f} (Record: {best_losses[0.0]:.5f})")
 
     accumulated_count = 0
     total_pool_size = len(base_pool_files_B)
@@ -235,6 +256,7 @@ for run_idx in range(N_REPEATS):
         loss = evaluate(model_current, loader_test_B)
         aggregated_results[target_ratio].append(loss)
         
+        # LOGIQUE D'AFFICHAGE CORRIGÉE
         if loss < best_losses[target_ratio]:
             best_losses[target_ratio] = loss
             save_path = os.path.join(SAVE_DIR, f"best_model_ratio_{int(target_ratio*100)}")
@@ -242,6 +264,8 @@ for run_idx in range(N_REPEATS):
             model_current.save_pretrained(save_path)
             processor.save_pretrained(save_path)
             print(f"    [NEW BEST] {target_ratio*100}% sauvegardé (Loss: {loss:.5f})")
+        else:
+            print(f"    [INFO]     {target_ratio*100}% Loss: {loss:.5f} (Record: {best_losses[target_ratio]:.5f})")
 
 # ==========================================
 # 5. GRAPHIQUE COMPARATIF LISSÉ (SCIPY)
@@ -252,9 +276,9 @@ final_ratios = [0.0] + TARGET_RATIOS
 dropout_means = [np.mean(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
 dropout_stds = [np.std(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
 
-# Vos valeurs Random historiques (mise à jour si besoin)
-random_means = [0.20460, 0.09660, 0.07259, 0.04295, 0.03793, 0.03206, 0.01708]
-
+# Vos valeurs Random (A remplacer par les vraies après la fin de randomTraining.py)
+# Exemple de placeholders :
+random_means = [0.19335, 0.09094, 0.06512, 0.03685, 0.02530, 0.01946, 0.01483]
 min_len = min(len(random_means), len(final_ratios))
 x_vals = np.array([r * 100 for r in final_ratios[:min_len]])
 
