@@ -11,8 +11,8 @@ class ImageRegressionDataset(Dataset):
     def __init__(self, image_paths, processor):
         self.image_paths = image_paths
         self.processor = processor
-        self.max_x = 1280.0 
-        self.max_y = 720.0
+        self.max_x = 1920.0 
+        self.max_y = 1080.0
 
     def __len__(self):
         return len(self.image_paths)
@@ -43,7 +43,7 @@ def get_model_and_processor(device):
 def train_one_cycle(model, train_loader, device, epochs=5):
     """Entraîne le modèle pour un nombre donné d'époques"""
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     model.train()
     
     for epoch in range(epochs):

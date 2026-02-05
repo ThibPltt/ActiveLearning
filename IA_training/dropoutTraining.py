@@ -38,14 +38,14 @@ N_REPEATS = 3
 # Config Dropout
 MC_PASSES = 10           
 BATCH_SIZE_UNCERTAINTY = 64
-DROPOUT_RATE = 0.25       
+DROPOUT_RATE = 0.5       
 
 EPOCHS = 20      
 BATCH_SIZE = 10
 LEARNING_RATE = 1e-4 
 
 # Dossier de sauvegarde
-SAVE_DIR = "best_models_dropout_0.25"
+SAVE_DIR = "best_models_dropout_0.5"
 if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 
 # ==========================================
@@ -94,8 +94,8 @@ class ImageRegressionDataset(Dataset):
     def __init__(self, image_paths, processor):
         self.image_paths = image_paths
         self.processor = processor
-        self.max_x = 1280.0 
-        self.max_y = 720.0
+        self.max_x = 1920.0 
+        self.max_y = 1080.0
 
     def __len__(self):
         return len(self.image_paths)
@@ -146,7 +146,7 @@ def train_model(train_files, desc_bar):
     
     model.train()
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     
     train_ds = ImageRegressionDataset(train_files, processor)
     train_ld = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
@@ -165,7 +165,7 @@ def train_model(train_files, desc_bar):
 def evaluate(model, loader):
     model.eval() 
     total_loss = 0; count = 0
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     with torch.no_grad():
         for pv, targets in loader:
             pv, targets = pv.to(DEVICE), targets.to(DEVICE)
@@ -270,16 +270,17 @@ for run_idx in range(N_REPEATS):
 # ==========================================
 # 5. GRAPHIQUE FINAL COMPARATIF
 # ==========================================
-print("\n[>] Génération du graphique 'benchmark_dropout_0.25.png'...")
+print("\n[>] Génération du graphique 'benchmark_dropout_0.5.png'...")
 
 final_ratios = [0.0] + TARGET_RATIOS
-# Moyenne pour le 0.25 (ce qu'on teste)
-dropout_025_means = [np.mean(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
-dropout_025_stds  = [np.std(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
+# Moyenne pour le 0.5 (ce qu'on teste)
+dropout_05_means = [np.mean(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
+dropout_05_stds  = [np.std(aggregated_results[r]) if aggregated_results[r] else 0 for r in final_ratios]
+dropout_bests = [best_losses[r] for r in final_ratios]
 
 # --- BENCHMARKS (CHAMPIONS) ---
-random_best_values = [0.19335, 0.09094, 0.06512, 0.03685, 0.02530, 0.01946, 0.01483]
-dropout_05_best_values = [0.19037, 0.12551, 0.08792, 0.05607, 0.03679, 0.02869, 0.01809]
+random_best_values = [0.22662, 0.18325, 0.14990, 0.11003, 0.07957, 0.05597, 0.03629]
+# dropout_05_best_values = [0.19037, 0.12551, 0.08792, 0.05607, 0.03679, 0.02869, 0.01809]
 
 min_len = min(len(random_best_values), len(final_ratios))
 x_vals = np.array([r * 100 for r in final_ratios[:min_len]])
@@ -296,39 +297,44 @@ except:
     plt.plot(x_vals, random_best_values[:min_len], color='gray', linestyle='--', label='Random (Best)')
 plt.scatter(x_vals, random_best_values[:min_len], color='gray', marker='x')
 
-# 2. DROPOUT 0.5 (Rouge - Pointillés)
+# 2. DROPOUT 0.5 (Vert - Moyenne)
 try:
-    spl_05 = make_interp_spline(x_vals, dropout_05_best_values[:min_len], k=2)
-    y_smooth_05 = np.clip(spl_05(x_smooth), 0, None)
-    plt.plot(x_smooth, y_smooth_05, color='red', linestyle='--', linewidth=2, label='Dropout 0.5 (Best)', alpha=0.7)
+    spl_drop = make_interp_spline(x_vals, dropout_05_means[:min_len], k=2)
+    y_smooth_drop = np.clip(spl_drop(x_smooth), 0, None)
+    plt.plot(x_smooth, y_smooth_drop, color='green', linestyle='-', linewidth=3, label=f'Dropout {DROPOUT_RATE} (Moyenne)')
 except:
-    plt.plot(x_vals, dropout_05_best_values[:min_len], color='red', linestyle='--', label='Dropout 0.5 (Best)')
-plt.scatter(x_vals, dropout_05_best_values[:min_len], color='red', marker='x')
+    plt.plot(x_vals, dropout_05_means[:min_len], color='green', linestyle='-', label=f'Dropout {DROPOUT_RATE} (Moyenne)')
+
+
 
 # 3. DROPOUT 0.25 (Vert - Ligne Pleine) - NOTRE TEST
-try:
-    spl_025 = make_interp_spline(x_vals, dropout_025_means[:min_len], k=2)
-    y_smooth_025 = np.clip(spl_025(x_smooth), 0, None)
-    plt.plot(x_smooth, y_smooth_025, color='green', linestyle='-', linewidth=3, label=f'Dropout 0.25 (Moyenne)')
-except:
-    plt.plot(x_vals, dropout_025_means[:min_len], color='green', linestyle='-', label=f'Dropout 0.25 (Moyenne)')
+# try:
+    # spl_025 = make_interp_spline(x_vals, dropout_025_means[:min_len], k=2)
+    # y_smooth_025 = np.clip(spl_025(x_smooth), 0, None)
+    # plt.plot(x_smooth, y_smooth_025, color='green', linestyle='-', linewidth=3, label=f'Dropout 0.25 (Moyenne)')
+# except:
+    #plt.plot(x_vals, dropout_025_means[:min_len], color='green', linestyle='-', label=f'Dropout 0.25 (Moyenne)')
 
-plt.errorbar(x_vals, dropout_025_means[:min_len], yerr=dropout_025_stds[:min_len], fmt='o', color='darkgreen', capsize=5)
+plt.errorbar(x_vals, dropout_05_means[:min_len], yerr=dropout_05_stds[:min_len], fmt='o', color='darkgreen', capsize=5)
 
-plt.title(f"Benchmark Final : Random vs Dropout 0.5 vs Dropout 0.25")
+# --- AJOUT DE L'ÉTOILE POUR LES RECORDS ABSOLUS DROPOUT ---
+plt.scatter(x_vals, dropout_bests[:min_len], color='lime', marker='*', s=150, edgecolors='black', label=f'Record Absolu (Dropout {DROPOUT_RATE})', zorder=10)
+
+# plt.title(f"Benchmark Final : Random vs Dropout 0.5")
+plt.title(f"Benchmark Final : Random vs Dropout {DROPOUT_RATE}")
 plt.xlabel("Pourcentage de données du Domaine B ajoutées (%)")
-plt.ylabel("Loss MSE (Plus bas est meilleur)")
+plt.ylabel("Loss MAE")
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.3)
 
 # Sauvegardes
-plt.savefig(f"benchmark_dropout_0.25.png", dpi=300)
+plt.savefig(f"benchmark_dropout_{DROPOUT_RATE}.png", dpi=300)
 
-csv_filename = f"resultats_dropout_{DROPOUT_RATE}.csv"
+csv_filename = f"resultats_dropout_{DROPOUT_RATE}2.csv"
 with open(csv_filename, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(["Ratio", "Mean", "Std"] + [f"Run {i+1}" for i in range(N_REPEATS)])
     for r in final_ratios:
         vals = aggregated_results[r]
         writer.writerow([r, np.mean(vals), np.std(vals)] + [f"{v:.5f}" for v in vals])
-print(f"[OK] Terminé. Fichiers : {csv_filename} et benchmark_dropout_0.25.png")
+print(f"[OK] Terminé. Fichiers : {csv_filename} et benchmark_dropout_{DROPOUT_RATE}.png")

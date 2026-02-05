@@ -18,11 +18,11 @@ random : prendre 80% au pif du domaine B (Active Learning)
 -> split en plusieurs dossiers les train set Domain A, test set Domain A, AL set Domain B et test set Domain B
 
 PUIS ON FAIT UNE COMPARAISON (on test le domaine A et le domaine B et on regarde la loss)
-Baseline Domain A (test : 0.03340)
-Baseline Domain B (test : 0.22498)
+Baseline Domain A (test : 0.0357)
+Baseline Domain B (test : 0.2303)
 
    -> [OK] CONFIRMÉ : Le modèle est perdu sur B.
-   -> Domain Gap = 6.7x plus d'erreur sur B que sur A.
+   -> Domain Gap = 6.5x plus d'erreur sur B que sur A.
    -> normal que la loss de A soit moins grande -> déjà entraîné sur A (quelques données) alors que B jamais train (AL) encore et donc fait au pif
 
 INCREMENTAL -> chaque ratio on reprend les % précédents (ex : dans 50% y a tous les 1% 2% 5% 20%)

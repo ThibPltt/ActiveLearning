@@ -1,13 +1,14 @@
 import os
 import torch
 import torch.nn as nn
+import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoImageProcessor, ResNetForImageClassification, logging
-import random
-import sys
 from tqdm import tqdm
+import sys
 
 # ==========================================
 # 0. CONFIGURATION
@@ -16,27 +17,69 @@ logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f">>> DIAGNOSTIC DOMAIN GAP (A vs B) sur {DEVICE}")
+
 MODEL_NAME = "microsoft/resnet-18"
-BATCH_SIZE = 10
-EPOCHS = 15  # Suffisant pour que A devienne bon
+BATCH_SIZE = 64
+EPOCHS = 15     
+LEARNING_RATE = 1e-4
+NUM_WORKERS = 0
 
 # ==========================================
-# 1. DATASET
+# 1. CHEMINS & DATASET
 # ==========================================
+current_script_dir = Path(__file__).resolve().parent
+dataset_dir = current_script_dir.parent / "FINAL_DATASET"
+if not dataset_dir.exists():
+    dataset_dir = current_script_dir.parent.parent / "FINAL_DATASET"
+
+dir_train_A = dataset_dir / "Domain_A_Train"
+dir_test_B  = dataset_dir / "Domain_B_Test"
+dir_test_A  = dataset_dir / "Domain_A_Test" 
+
+if not dir_train_A.exists():
+    print(f"[ERREUR] Dossier introuvable : {dir_train_A}")
+    sys.exit(1)
+
+def load_images(folder):
+    if not folder.exists(): return []
+    exts = ["*.jpg", "*.JPG", "*.png", "*.jpeg"]
+    files = []
+    for ext in exts: files.extend([str(f) for f in folder.glob(ext)])
+    return sorted(list(set(files)))
+
+train_files_A = load_images(dir_train_A)
+test_files_B  = load_images(dir_test_B)
+test_files_A  = load_images(dir_test_A)
+
+if len(test_files_A) == 0:
+    print("[INFO] Création automatique du Test A (Split 80/20).")
+    import random
+    random.shuffle(train_files_A)
+    split = int(len(train_files_A) * 0.8)
+    test_files_A = train_files_A[split:]
+    train_files_A = train_files_A[:split]
+
+print(f"--- DONNÉES ---")
+print(f"Train A : {len(train_files_A)} images")
+print(f"Test A  : {len(test_files_A)} images")
+print(f"Test B  : {len(test_files_B)} images")
+print("-" * 60)
+
 class ImageRegressionDataset(Dataset):
     def __init__(self, image_paths, processor):
         self.image_paths = image_paths
         self.processor = processor
-        self.max_x = 1280.0 
-        self.max_y = 720.0
+        self.max_x = 1920.0 
+        self.max_y = 1080.0
 
     def __len__(self):
         return len(self.image_paths)
 
     def extract_coords(self, filename):
         try:
-            name_no_ext = filename.replace('.jpg', '')
-            parts = name_no_ext.split('_')
+            name = filename.replace('.jpg', '').replace('.JPG', '')
+            parts = name.split('_')
             x = float(parts[-2])
             y = float(parts[-1])
             return x / self.max_x, y / self.max_y
@@ -46,11 +89,9 @@ class ImageRegressionDataset(Dataset):
     def __getitem__(self, idx):
         path = self.image_paths[idx]
         image = Image.open(path).convert("RGB")
-        norm_x, norm_y = self.extract_coords(os.path.basename(path))
-        target = torch.tensor([norm_x, norm_y], dtype=torch.float32)
+        target = torch.tensor(self.extract_coords(os.path.basename(path)), dtype=torch.float32)
         inputs = self.processor(image, return_tensors="pt")
-        pixel_values = inputs['pixel_values'].squeeze(0)
-        return pixel_values, target
+        return inputs['pixel_values'].squeeze(0), target
 
 try:
     processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
@@ -58,58 +99,21 @@ except:
     from transformers import ConvNextImageProcessor
     processor = ConvNextImageProcessor.from_pretrained(MODEL_NAME)
 
-
-# ... (Imports et Config identiques) ...
-
-# ==========================================
-# 2. CHARGEMENT DEPUIS FINAL_DATASET
-# ==========================================
-current_script_dir = Path(__file__).resolve().parent
-# On pointe vers le nouveau dossier
-dataset_dir = current_script_dir.parent / "FINAL_DATASET"
-
-print("--- CHARGEMENT DES DONNÉES FIGÉES ---")
-
-# Chargement direct sans calcul de split
-path_train_A = dataset_dir / "Domain_A_Train"
-path_test_A  = dataset_dir / "Domain_A_Test"
-path_test_B  = dataset_dir / "Domain_B_Test" # On utilise le vrai test set B
-
-# Vérification
-if not path_train_A.exists():
-    raise FileNotFoundError("Lancez d'abord split_folders.py !")
-
-train_files_A = [str(f) for f in path_train_A.glob("*.jpg")]
-test_files_A  = [str(f) for f in path_test_A.glob("*.jpg")]
-test_files_B  = [str(f) for f in path_test_B.glob("*.jpg")]
-
-print(f"Domaine A (Train) : {len(train_files_A)} images")
-print(f"Domaine A (Test)  : {len(test_files_A)} images")
-print(f"Domaine B (Test)  : {len(test_files_B)} images")
-print("-" * 60)
-
-# ... (Le reste du code reste IDENTIQUE : Entraînement et Evaluate) ...
+ld_train_A = DataLoader(ImageRegressionDataset(train_files_A, processor), batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+ld_test_A  = DataLoader(ImageRegressionDataset(test_files_A, processor), batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
+ld_test_B  = DataLoader(ImageRegressionDataset(test_files_B, processor), batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
 # ==========================================
-# 3. ENTRAINEMENT SUR A
+# 2. ENTRAINEMENT BASELINE
 # ==========================================
-print("\n[ETAPE 1] Entraînement sur les 3/4 du Domaine A...")
-print("L'objectif est que le modèle devienne excellent sur A.")
-
-model = ResNetForImageClassification.from_pretrained(
-    MODEL_NAME, num_labels=2, ignore_mismatched_sizes=True
-).to(DEVICE)
-
+print("\n[ETAPE 1] Entraînement Baseline (Domaine A)...")
+model = ResNetForImageClassification.from_pretrained(MODEL_NAME, num_labels=2, ignore_mismatched_sizes=True).to(DEVICE)
 model.train()
-optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
-criterion = nn.MSELoss()
+optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
+criterion = nn.L1Loss() 
 
-train_ds = ImageRegressionDataset(train_files_A, processor)
-train_ld = DataLoader(train_ds, batch_size=10, shuffle=True)
-
-for epoch in range(EPOCHS):
-    total_loss = 0
-    for pv, targets in tqdm(train_ld, desc=f"Epoch {epoch+1}/{EPOCHS}", leave=False):
+for epoch in tqdm(range(EPOCHS), desc="Training"):
+    for pv, targets in ld_train_A:
         pv, targets = pv.to(DEVICE), targets.to(DEVICE)
         optimizer.zero_grad()
         out = model(pv).logits
@@ -117,51 +121,69 @@ for epoch in range(EPOCHS):
         loss = criterion(preds, targets)
         loss.backward()
         optimizer.step()
-        total_loss += loss.item()
 
 # ==========================================
-# 4. VERIFICATION (TEST A vs TEST B)
+# 3. CALCULS ET AFFICHAGE
 # ==========================================
-def evaluate_files(model, files, desc):
-    ds = ImageRegressionDataset(files, processor)
-    ld = DataLoader(ds, batch_size=10, shuffle=False)
+def get_mae(loader, name):
     model.eval()
-    total_loss = 0
-    count = 0
-    criterion = nn.MSELoss()
+    total_loss = 0; count = 0
+    criterion = nn.L1Loss()
     with torch.no_grad():
-        for pv, targets in tqdm(ld, desc=desc):
+        for pv, targets in tqdm(loader, desc=f"Test {name}"):
             pv, targets = pv.to(DEVICE), targets.to(DEVICE)
-            out = model(pv).logits
-            preds = torch.sigmoid(out)
-            loss = criterion(preds, targets)
-            total_loss += loss.item()
+            preds = torch.sigmoid(model(pv).logits)
+            total_loss += criterion(preds, targets).item()
             count += 1
     return total_loss / count if count > 0 else 0
 
+mae_A = get_mae(ld_test_A, "Domaine A")
+mae_B = get_mae(ld_test_B, "Domaine B")
+
+gap = mae_B - mae_A
+multiplier = mae_B / mae_A if mae_A > 0 else 0
+
 print("\n" + "="*60)
-print(" RÉSULTATS DU DOMAIN GAP")
+print(f" DIAGNOSTIC TERMINÉ")
 print("="*60)
+print(f"Erreur A : {mae_A:.5f}")
+print(f"Erreur B : {mae_B:.5f}")
+print(f"MULTIPLICATEUR : x{multiplier:.2f}")
 
-# TEST 1 : A -> A (Doit être BON)
-loss_A = evaluate_files(model, test_files_A, "Test sur A (1/4)")
-print(f"\n1. TEST SUR LE DOMAINE A (Attendu: TRÈS BON / FAIBLE LOSS)")
-print(f"   MSE Loss = {loss_A:.5f}")
+# ==========================================
+# 4. GRAPHIQUE ÉPURÉ (SANS FLÈCHE)
+# ==========================================
+plt.figure(figsize=(10, 7))
 
-if loss_A < 0.05:
-    print("   -> [OK] Le modèle a bien appris son domaine d'origine.")
-else:
-    print("   -> [ATTENTION] Le modèle galère même sur A. Vérifiez vos données A.")
+# Données
+domains = ['Domaine A\n(Référence)', 'Domaine B\n(Cible)']
+scores = [mae_A, mae_B]
+colors = ['#2ca02c', '#d62728'] # Vert / Rouge
 
-# TEST 2 : A -> B (Doit être NUL)
-loss_B = evaluate_files(model, test_files_B, "Test sur B (Zero-Shot)")
-print(f"\n2. TEST SUR LE DOMAINE B (Attendu: TRÈS NUL / HAUTE LOSS)")
-print(f"   MSE Loss = {loss_B:.5f}")
+# Barres
+bars = plt.bar(domains, scores, color=colors, alpha=0.85, width=0.6, edgecolor='black')
 
-if loss_B > 0.10:
-    print(f"   -> [OK] CONFIRMÉ : Le modèle est perdu sur B.")
-    print(f"   -> Domain Gap = {loss_B / loss_A:.1f}x plus d'erreur sur B que sur A.")
-else:
-    print("   -> [BIZARRE] Le modèle est déjà bon sur B sans entraînement ??")
+# Valeurs sur les barres
+for bar in bars:
+    height = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2., height,
+             f'{height:.4f}', ha='center', va='bottom', fontsize=14, fontweight='bold')
 
-print("="*60)
+# BOITE D'INFO CENTRALE (Pas de flèche)
+# On place le texte bien haut, au milieu
+max_height = max(mae_A, mae_B)
+plt.text(
+    0.5, max_height * 0.6, # Position X, Y
+    f"GAP: +{gap:.4f}\nLOSS x{multiplier:.1f}", 
+    ha='center', va='center', 
+    fontsize=20, fontweight='bold', color='black',
+    bbox=dict(boxstyle="square,pad=0.5", fc="white", ec="black", lw=2)
+)
+
+plt.title(f"Diagnostic du Domain Gap (MAE)", fontsize=16, fontweight='bold')
+plt.ylabel("Erreur Moyenne Absolue (MAE)", fontsize=12)
+plt.grid(axis='y', linestyle='--', alpha=0.4)
+
+plt.tight_layout()
+plt.savefig("compare_trainA_testA_testB.png", dpi=300)
+print("[OK] Graphique généré : 'compare_trainA_testA_testB.png'")
