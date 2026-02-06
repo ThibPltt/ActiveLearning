@@ -30,7 +30,7 @@ INCREMENTAL -> chaque ratio on reprend les % précédents (ex : dans 50% y a tou
 Ajout de sauvegarde de chaque meilleur modèle entre chaque ratio de chaque run (meilleur 5%, 10% etc.)
 Refaire les entraînements de random et Dropout
 
--> LES GRAPHES PRENNENET BIEN EN COMPTE LA LOSS DE TEST(20%) ET PAS DE TRAIN
+-> LES GRAPHES PRENNENET BIEN EN COMPTE LA LOSS DE TEST (20%) ET PAS DE TRAIN
 
 train random
 python.exe randomTraining.py > logsRANDOM2.txt 2>&1
@@ -48,11 +48,15 @@ Dropout à 25% pour visualiser la différence
 
 -> un peu moins bien que 50% donc stratégie qui ne fonctionne pas
 
-ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+UTILITE DROPOUT : On désactive 25% des neuronnes du cerveau. Si même avec cette désactivation il arrive à avoir une loss faible, alors la prédiction sera bien juste
 
-A faire :
 
 Uncertainty : Data Augmentation
+-> utilité : on va changer les caractéristiques du modèles (par exemple ajouter de la luminosité, des effets pour cacher les images et voir si le modèle arrive malgré cela)
+-> créer 10 clones de l'image, l'abîmer et demander la position (x, y) sur ces 10 clones
+
+ON EST SUR UN REENTRAINEMENT PAR SCRATCH A CHAQUE FOIS, ON REPART DE 0 POUR SELECTIONNER DE NOUVELLES DONNES ET PAS BIAISER LES RESULTATS AVEC LES ANALYSES D'AUTRES PRECENDENTES STRATEGIES
+ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 Diversity : Cluster-based + predit its own errors ???
 
