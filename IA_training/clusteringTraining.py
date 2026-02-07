@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import shutil
 import csv
 from scipy.interpolate import make_interp_spline
+from sklearn.preprocessing import normalize
 
 # NOUVEAUX IMPORTS POUR LE CLUSTERING
 from sklearn.cluster import KMeans
@@ -43,7 +44,7 @@ BATCH_SIZE = 10
 LEARNING_RATE = 1e-4 
 NUM_WORKERS = 0
 
-SAVE_DIR = "best_models_clustering"
+SAVE_DIR = "best_models_clustering_L2"
 if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 
 # ==========================================
@@ -184,9 +185,11 @@ def query_clustering_sampling(model, pool_files, n_to_add):
     ld_pool = DataLoader(ds_pool, batch_size=64, shuffle=False)
     features = get_features(model, ld_pool)
 
+    features = normalize(features, norm='l2')
+
     # 2. K-Means
     # On veut trouver 'n_to_add' représentants
-    kmeans = KMeans(n_clusters=n_to_add, init='k-means++', n_init=10, random_state=42)
+    kmeans = KMeans(n_clusters=n_to_add, init='k-means++', n_init=20, random_state=42)
     kmeans.fit(features)
 
     # 3. Sélection des plus proches des centroïdes
@@ -268,7 +271,7 @@ for run_idx in range(N_REPEATS):
 # ==========================================
 # 5. GRAPHIQUE FINAL COMPARATIF (4 COURBES)
 # ==========================================
-print("\n[>] Génération du graphique 'benchmark_clustering.png'...")
+print("\n[>] Génération du graphique 'benchmark_clustering_L2.png'...")
 
 final_ratios = [0.0] + TARGET_RATIOS
 
@@ -285,7 +288,10 @@ random_best_values = [0.22662, 0.18325, 0.14990, 0.11003, 0.07957, 0.05597, 0.03
 dropout_025_best_values = [0.23847, 0.19540, 0.15526, 0.10915, 0.08544, 0.07129, 0.04272]
 
 # Data Augmentation 
-data_aug_best_values = [0.24126, 0.20826, 0.19518, 0.17650, 0.15241, 0.09309, 0.04062] 
+data_aug_best_values = [0.24126, 0.20826, 0.19518, 0.17650, 0.15241, 0.09309, 0.04062]
+
+# Clustering V1)
+clustering_v1_values = [0.22838, 0.16766, 0.13846, 0.09015, 0.07230, 0.05592, 0.03622]
 
 min_len = min(len(random_best_values), len(final_ratios))
 x_vals = np.array([r * 100 for r in final_ratios[:min_len]])
@@ -298,8 +304,10 @@ plt.plot(x_vals, random_best_values[:min_len], color='gray', linestyle='--', lab
 plt.plot(x_vals, dropout_025_best_values[:min_len], color='red', linestyle='--', label='Dropout 0.25 (Ref)', alpha=0.6)
 # 3. DATA AUGMENTATION (Bleu)
 plt.plot(x_vals, data_aug_best_values[:min_len], color='blue', linestyle='--', label='Data Augmentation (Ref)', alpha=0.6)
+# 4. CLUSTERING V1 (Violet)
+plt.plot(x_vals, clustering_v1_values[:min_len], color='purple', linestyle='-.', label='Clustering V1 (Ref)', alpha=0.7)
 
-# 4. CLUSTERING (Orange - Ligne Pleine - ACTUEL)
+# 5. CLUSTERING (Orange - Ligne Pleine - ACTUEL)
 try:
     x_smooth = np.linspace(x_vals.min(), x_vals.max(), 300)
     spl_clus = make_interp_spline(x_vals, cluster_means[:min_len], k=2)
@@ -313,16 +321,16 @@ plt.errorbar(x_vals, cluster_means[:min_len], yerr=cluster_stds[:min_len], fmt='
 # Étoiles Records Clustering
 plt.scatter(x_vals, cluster_bests[:min_len], color='gold', marker='*', s=180, edgecolors='black', label='Record Absolu (Clustering)', zorder=10)
 
-plt.title(f"Benchmark : Diversity Sampling (Clustering) vs Uncertainty vs Random")
+plt.title(f"Benchmark : Clustering vs Dropout vs Augmentation vs Random")
 plt.xlabel("Pourcentage de données du Domaine B ajoutées (%)")
-plt.ylabel("Loss MAE (Plus bas est meilleur)")
+plt.ylabel("Loss MAE")
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.3)
 
-plt.savefig("benchmark_clustering.png", dpi=300)
+plt.savefig("benchmark_clustering_L2.png", dpi=300)
 
 # CSV
-csv_filename = "resultats_clustering.csv"
+csv_filename = "resultats_clustering_L2.csv"
 with open(csv_filename, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(["Ratio", "Mean", "Std", "Best"] + [f"Run {i+1}" for i in range(N_REPEATS)])
@@ -330,4 +338,4 @@ with open(csv_filename, 'w', newline='') as f:
         vals = aggregated_results[r]
         writer.writerow([r, np.mean(vals), np.std(vals), best_losses[r]] + [f"{v:.5f}" for v in vals])
 
-print(f"[OK] Terminé. Fichiers : {csv_filename} et benchmark_clustering.png")
+print(f"[OK] Terminé. Fichiers : {csv_filename} et benchmark_clustering_L2.png")

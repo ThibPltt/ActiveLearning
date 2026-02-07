@@ -59,9 +59,22 @@ ON EST SUR UN REENTRAINEMENT PAR SCRATCH A CHAQUE FOIS, ON REPART DE 0 POUR SELE
 
 -> Data Augmentation pas ouf du tout mais vraiment, moins bien que dropout 0.25
 
+
+Diversity : Cluster-based
+-> presque meilleur que le random
+
+-> maintenant test avec L2 NORMALISATION
+-> transformer une mesure de "distance" en une mesure de "ressemblance"
+-> ResNet a une feature avec un vecteur de 512 chiffres (direction (angle) et longueur)
+-> K-Means utilise la distance euclidienne entre 2 points (ligne droite)
+-> lier les images avec les mêmes caractéristiques (ex : luminosité)
+-> L2 divise chaque vecteur par sa propre longueur
+-> distance entre 2 points ne dépend plus de l'angle
+-> donc au lieu de choisir les éléments les plus proches pour faire un cluster, on va prendre à équidistance les autres images pour diversifier (avec des carac différentes)
+
 ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-Diversity : Cluster-based + predit its own errors ???
++ predit its own errors ???
 
 Puis mix des meilleurs
 
