@@ -56,6 +56,9 @@ Uncertainty : Data Augmentation
 -> créer 10 clones de l'image, l'abîmer et demander la position (x, y) sur ces 10 clones
 
 ON EST SUR UN REENTRAINEMENT PAR SCRATCH A CHAQUE FOIS, ON REPART DE 0 POUR SELECTIONNER DE NOUVELLES DONNES ET PAS BIAISER LES RESULTATS AVEC LES ANALYSES D'AUTRES PRECENDENTES STRATEGIES
+
+-> Data Augmentation pas ouf du tout mais vraiment, moins bien que dropout 0.25
+
 ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 Diversity : Cluster-based + predit its own errors ???
