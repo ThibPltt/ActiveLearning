@@ -1,0 +1,38 @@
+--- RECHERCHE ET ANALYSE DES TEMPS ---
+Racine de recherche : C:\Users\Megaport\Desktop\PROJET_AL
+
+[TROUVÉ] : best_models_random
+   Debut : 2026-02-05 19:39:17
+   Fin   : 2026-02-05 20:52:48
+   -----------------------------------------
+   > DUREE : 1h 13min 31s
+
+[TROUVÉ] : best_models_dropout_0.25
+   Debut : 2026-02-05 23:50:48
+   Fin   : 2026-02-06 01:38:27
+   -----------------------------------------
+   > DUREE : 1h 47min 39s
+
+[TROUVÉ] : best_models_dropout_0.5
+   Debut : 2026-02-05 22:03:05
+   Fin   : 2026-02-05 23:21:28
+   -----------------------------------------
+   > DUREE : 1h 18min 22s
+
+[TROUVÉ] : best_models_data_aug
+   Debut : 2026-02-06 15:01:29
+   Fin   : 2026-02-06 16:47:45
+   -----------------------------------------
+   > DUREE : 1h 46min 15s
+
+[TROUVÉ] : best_models_clustering
+   Debut : 2026-02-06 20:30:00
+   Fin   : 2026-02-06 22:53:15
+   -----------------------------------------
+   > DUREE : 2h 13min 15s
+
+[TROUVÉ] : best_models_clustering_L2
+   Debut : 2026-02-07 21:13:16
+   Fin   : 2026-02-07 23:53:35
+   -----------------------------------------
+   > DUREE : 2h 40min 18s

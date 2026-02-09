@@ -72,11 +72,19 @@ Diversity : Cluster-based
 -> distance entre 2 points ne dépend plus de l'angle
 -> donc au lieu de choisir les éléments les plus proches pour faire un cluster, on va prendre à équidistance les autres images pour diversifier (avec des carac différentes)
 
+
+-> CLuster L2 normalization meilleur que random (de peu mais meilleur)
+-> 50.0% (0.00316 L2 contre 0.03629 pour le random)
+
 ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-+ predit its own errors ???
++ predit its own errors
 
 Puis mix des meilleurs
+
+FAIT :
+((((ALORS, temps de calcul de chacun : VOIR logsTEMPS.txt
+Prédiction du plus proche : VOIR logs.PREDICTION.txt))))
 
 --> TOUJOURS
 -> 75% domaine A Train et 25% Test
