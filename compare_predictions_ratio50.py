@@ -22,7 +22,8 @@ STRATEGIES = [
     ("Data Aug", "best_models_data_aug"),
     ("Clustering", "best_models_clustering"),
     ("Clustering L2", "best_models_clustering_L2"),
-    ("Learning Loss", "best_models_learning_loss")
+    ("Learning Loss", "best_models_learning_loss"),
+    ("Mixte", "best_models_mixed")
 ]
 
 TARGET_SUBFOLDER = "best_model_ratio_50"
@@ -173,7 +174,8 @@ color_map = {
     "Data Aug": "blue",
     "Clustering": "orange",
     "Clustering L2": "green",
-    "Learning Loss": "purple"
+    "Learning Loss": "purple",
+    "Mixte": "cyan"
 }
 
 for name in [k for k, v in sorted_strats]: # On affiche dans l'ordre du classement
@@ -196,7 +198,7 @@ plt.title(f"Distribution des Erreurs sur {real_n} Images Test (Ratio 50%)", font
 plt.ylabel("Erreur en Pixels (Plus bas est meilleur)")
 plt.grid(True, axis='y', linestyle='--', alpha=0.5)
 
-save_name = "benchmark_massif_boxplot2.png"
+save_name = "benchmark_massif_boxplot3.png"
 plt.savefig(save_name, dpi=300)
 print(f"\n[OK] Graphique statistique généré : {save_name}")
 plt.show()

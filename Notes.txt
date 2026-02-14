@@ -87,20 +87,16 @@ Predit its own errors (Learning Loss)
 -> BIEN MEILLEUR pour de la CLASSIFICATION, l'erreur ici est la distance de pixels, ce qui n'est pas clair (comme Chat VS Chien) -> n'apprend pas
 -> Batch_size trop petit (comparaison 5 et 5), pas assez mais pas assez de temps ni ressources pour faire mieux
 
-ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 Mix des meilleurs
 -> mix CLUSTERING L2 ET DATA AUGMENTATION
--> résultats : 
+-> résultats : NUL A CHIER
 
 FAIT :
 ((((ALORS, temps de calcul de chacun : VOIR logsTEMPS.txt
 Prédiction du plus proche : VOIR logs.PREDICTION.txt))))
 
-
-
-
-Supp le point dans l'Etat de l'art avant les [] et ne jamais commencer une phrase par une citation.
+ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 perspectives : Grad-Cam (resnet-18) -> heatmap des éléments qui sont importants
 -> la où il va mettre plus de poids

@@ -19,7 +19,8 @@ STRATEGIES = [
     ("Data Aug", "best_models_data_aug", "blue", "s"),        # Carré Bleu
     ("Clustering", "best_models_clustering", "orange", "D"),    # Losange Orange
     ("Clustering L2", "best_models_clustering_L2", "green", "^"), # Triangle haut Vert
-    ("Learning Loss", "best_models_learning_loss", "purple", "X") # Croix Violette
+    ("Learning Loss", "best_models_learning_loss", "purple", "X"), # Croix Violette
+    ("Mixte", "best_models_mixed", "cyan", "P")             # Pentagone Cyan
 ]
 
 # On vise les champions (Ratio 50%)
@@ -149,7 +150,7 @@ margin = 150
 plt.xlim(min_x - margin, max_x + margin)
 plt.ylim(max_y + margin, min_y - margin) # Y inversé
 
-filename = "graphique_dispersion.png"
+filename = "graphique_dispersion2.png"
 plt.savefig(filename, dpi=300)
 print(f"\n[OK] Graphique sauvegardé : {filename}")
 plt.show()
