@@ -12,7 +12,8 @@ TARGET_FOLDERS = [
     "best_models_dropout_0.5",
     "best_models_data_aug",
     "best_models_clustering",
-    "best_models_clustering_L2"
+    "best_models_clustering_L2",
+    "best_models_learning_loss"
 ]
 
 # Force l'encodage utf-8 pour la console Windows

@@ -1,0 +1,9 @@
+--- BASELINE RANDOM (HASARD TOTAL) ---
+Images uniques : 2051
+Simulation Hasard:   0%|          | 0/2051 [00:00<?, ?it/s]                                                           Simulation Hasard:   0%|          | 0/2051 [00:00<?, ?it/s]                                                           Simulation Hasard:   0%|          | 0/2051 [00:00<?, ?it/s]                                                           Simulation Hasard:   0%|          | 0/2051 [00:00<?, ?it/s]                                                           Simulation Hasard:   0%|          | 0/2051 [00:00<?, ?it/s]                                                           
+>>> RÉSULTATS HASARD
+    Moyenne : 772.27 pixels
+    Écart-type : 403.26 pixels
+    Min : 10.31 px | Max : 2049.09 px
+
+[OK] Graphique généré : baseline_random_dist.png

@@ -32,6 +32,10 @@ Refaire les entraînements de random et Dropout
 
 -> LES GRAPHES PRENNENET BIEN EN COMPTE LA LOSS DE TEST (20%) ET PAS DE TRAIN
 
+--> TOUJOURS
+-> 75% domaine A Train et 25% Test
+-> 80% domaine B (AL) et 20% Test
+
 train random
 python.exe randomTraining.py > logsRANDOM2.txt 2>&1
 
@@ -76,19 +80,24 @@ Diversity : Cluster-based
 -> CLuster L2 normalization meilleur que random (de peu mais meilleur)
 -> 50.0% (0.00316 L2 contre 0.03629 pour le random)
 
+
+Predit its own errors (Learning Loss)
+-> Résultats HORRIBLES
+-> pourquoi ? -> le modèle veut minimiser 2 choses en même temps, le module "erreur" est très bruyant (loss élevée) alors le réseau se concentre sur lui et pas l'autre
+-> BIEN MEILLEUR pour de la CLASSIFICATION, l'erreur ici est la distance de pixels, ce qui n'est pas clair (comme Chat VS Chien) -> n'apprend pas
+-> Batch_size trop petit (comparaison 5 et 5), pas assez mais pas assez de temps ni ressources pour faire mieux
+
 ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-+ predit its own errors
-
-Puis mix des meilleurs
+Mix des meilleurs
+-> mix CLUSTERING L2 ET DATA AUGMENTATION
+-> résultats : 
 
 FAIT :
 ((((ALORS, temps de calcul de chacun : VOIR logsTEMPS.txt
 Prédiction du plus proche : VOIR logs.PREDICTION.txt))))
 
---> TOUJOURS
--> 75% domaine A Train et 25% Test
--> 80% domaine B (AL) et 20% Test
+
 
 
 Supp le point dans l'Etat de l'art avant les [] et ne jamais commencer une phrase par une citation.

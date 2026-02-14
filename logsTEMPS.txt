@@ -36,3 +36,9 @@ Racine de recherche : C:\Users\Megaport\Desktop\PROJET_AL
    Fin   : 2026-02-07 23:53:35
    -----------------------------------------
    > DUREE : 2h 40min 18s
+
+[TROUVÉ] : best_models_learning_loss
+   Debut : 2026-02-09 22:28:00
+   Fin   : 2026-02-10 00:18:19
+   -----------------------------------------
+   > DUREE : 1h 50min 18s
