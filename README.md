@@ -15,7 +15,7 @@ L'objectif est de remplacer les capteurs infrarouges coûteux par une solution l
 
 L'organisation des dossiers est critique pour le bon fonctionnement des scripts d'analyse.
 
-```text
+
 PROJET_AL/
 │
 ├── IA_Training/                  # Scripts d'entraînement des modèles
