@@ -42,11 +42,11 @@ Bash
 pip install torch torchvision transformers scikit-learn matplotlib seaborn pandas tqdm pillow
 
 Stratégies
-Random,    Baseline,
-MC Dropout,    Uncertainty
-Data Augmentation,    Uncertainty,
-Clustering L2,    Diversity,
-Mixte (L2 + DA),    Hybride
+Random    (Baseline),
+MC Dropout    (Uncertainty),
+Data Augmentation    (Uncertainty),
+Clustering L2    (Diversity),
+Mixte (L2 + DA)    (Hybride)
 
 ## 📊 Résultats & Analyse
 ### 1. Performance Globale (Précision)
