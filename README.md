@@ -9,8 +9,6 @@ Ce projet de recherche explore l'utilisation de l'**Active Learning (Apprentissa
 
 L'objectif est de remplacer les capteurs infrarouges coûteux par une solution logicielle, en réduisant le coût d'annotation et en améliorant la robustesse du modèle face au **Domain Gap** (changements de personne, luminosité, fond, accessoires).
 
----
-
 ## 📂 Architecture du Projet
 
 L'organisation des dossiers est critique pour le bon fonctionnement des scripts d'analyse.
@@ -44,11 +42,11 @@ Bash
 pip install torch torchvision transformers scikit-learn matplotlib seaborn pandas tqdm pillow
 
 Stratégie,Type,Description
-Random,Baseline,Sélection aléatoire. Sert de référence pour valider l'intelligence des autres méthodes.
-MC Dropout,Uncertainty,Estime l'incertitude via la variance de plusieurs passes stochastiques (Dropout actif en inférence).
-Data Augmentation,Uncertainty,"Mesure la stabilité des prédictions sur une image perturbée (rotations, bruit). Si la prédiction bouge beaucoup = Incertitude élevée."
-Clustering L2,Diversity,Utilise K-Means sur les embeddings normalisés (L2) pour couvrir tout l'espace géométrique et éviter la redondance.
-Mixte (L2 + DA),Hybride,"Approche en entonnoir : Sélectionne d'abord les 300 images les plus incertaines (via Data Aug), puis filtre pour garder les 100 plus diversifiées (via Clustering)."
+Random,    Baseline,    Sélection aléatoire. Sert de référence pour valider l'intelligence des autres méthodes.
+MC Dropout,    Uncertainty,    Estime l'incertitude via la variance de plusieurs passes stochastiques (Dropout actif en inférence).
+Data Augmentation,    Uncertainty,    "Mesure la stabilité des prédictions sur une image perturbée (rotations, bruit). Si la prédiction bouge beaucoup = Incertitude élevée."
+Clustering L2,    Diversity,    Utilise K-Means sur les embeddings normalisés (L2) pour couvrir tout l'espace géométrique et éviter la redondance.
+Mixte (L2 + DA),    Hybride,    "Approche en entonnoir : Sélectionne d'abord les 300 images les plus incertaines (via Data Aug), puis filtre pour garder les 100 plus diversifiées (via Clustering)."
 
 ## 📊 Résultats & Analyse
 ### 1. Performance Globale (Précision)
@@ -94,12 +92,6 @@ Bash
 python analyze_final.py
 Génère : https://www.google.com/search?q=FULL_1_MOYENNES.png, FULL_2_DISTRIBUTIONS.png, https://www.google.com/search?q=FULL_3_ROBUSTESSE.png
 
-### 3. Investiguer les Biais
-Pour comprendre pourquoi un modèle échoue ou réussit (analyse par personne/position) :
-
-Bash
-python analyze_bias.py
-Génère : https://www.google.com/search?q=BIAS_1_SPATIAL.png, BIAS_2_GROUPS.png
 
 ## 📚 Références
 Auteur : Thibaut PLATET (5A IPS2 ENSIM)
