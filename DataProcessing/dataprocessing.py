@@ -2,6 +2,7 @@ import cv2
 import pandas as pd
 import os
 import glob
+from pathlib import Path
 
 def extract_and_name_frames(video_path, csv_path, output_root, subfolder_id):
     # Extraction du nom de base (ex: video_20240520_1430)
@@ -41,9 +42,9 @@ def extract_and_name_frames(video_path, csv_path, output_root, subfolder_id):
     print(f"Terminé : {frame_count} frames analysées.\n")
 
 # --- SCRIPT PRINCIPAL ---
-
-input_folder = "data/Domain_B" 
-output_folder = "processed_frames/Domain_B"
+current_dir = Path(__file__).resolve().parent
+input_folder = current_dir.parent / "raw_data"/"Domain_B" 
+output_folder = current_dir.parent / "datasets"/"Domain_B"
 
 # 1. Trouver toutes les vidéos dans tous les sous-dossiers (recursive=True)
 # Le pattern "**/*.mp4" cherche dans tous les niveaux de sous-répertoires
