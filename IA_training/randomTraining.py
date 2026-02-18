@@ -17,6 +17,9 @@ from scipy.interpolate import make_interp_spline
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
+
+# Objectif : Ce script implémente la stratégie d'Active Learning "Random Sampling" pour la régression d'images.
+
 logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -26,7 +29,7 @@ if torch.cuda.is_available():
     torch.backends.cudnn.benchmark = True 
 else:
     DEVICE = torch.device("cpu")
-    print(">>> ATTENTION : CPU UNIQUEMENT (LENT)")
+    print(">>> ATTENTION : CPU UNIQUEMENT")
 
 MODEL_NAME = "microsoft/resnet-18"
 
@@ -45,6 +48,7 @@ if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 # ==========================================
 # 1. CHEMINS & DATASET
 # ==========================================
+
 current_script_dir = Path(__file__).resolve().parent
 dataset_dir = current_script_dir.parent.parent / "FINAL_DATASET"
 
@@ -114,6 +118,7 @@ loader_test_B = DataLoader(ds_test_B, batch_size=BATCH_SIZE, shuffle=False, num_
 # ==========================================
 # 3. TRAINING & EVAL (MAE - L1LOSS)
 # ==========================================
+
 def train_model(train_files, desc_bar):
     model = ResNetForImageClassification.from_pretrained(
         MODEL_NAME, num_labels=2, ignore_mismatched_sizes=True
@@ -152,6 +157,7 @@ def evaluate(model, loader):
 # ==========================================
 # 4. EXECUTION
 # ==========================================
+
 aggregated_results = {0.0: []}
 for r in TARGET_RATIOS: aggregated_results[r] = []
 
@@ -165,6 +171,8 @@ for run_idx in range(N_REPEATS):
     current_pool = list(base_pool_files_B)
     
     # Stratégie Random : on mélange le pool au début
+    # C'est ici que les seeds sont définies
+    # Basé sur l'heure actuelle (donc différent à chaque répétition)
     random.shuffle(current_pool)
     
     # --- STEP 0: BASELINE ---
@@ -173,7 +181,7 @@ for run_idx in range(N_REPEATS):
     loss = evaluate(model_current, loader_test_B)
     aggregated_results[0.0].append(loss)
     
-    # LOGIQUE DE CHAMPIONNAT : On écrase si meilleur
+    # On écrase si meilleur
     if loss < best_losses[0.0]:
         best_losses[0.0] = loss
         save_path = os.path.join(SAVE_DIR, "best_baseline")
@@ -187,12 +195,12 @@ for run_idx in range(N_REPEATS):
     accumulated_count = 0
     total_pool_size = len(base_pool_files_B)
     
-    # --- STEP 1..N: ACTIVE LEARNING (RANDOM) ---
+    # --- STEP 1 : ACTIVE LEARNING (RANDOM) ---
     for target_ratio in TARGET_RATIOS:
         target_count = int(total_pool_size * target_ratio)
         n_to_add = target_count - accumulated_count
         
-        # Incremental : On ajoute les données au set existant
+        # Incremental : On ajoute les données au set existant (à chaque ratio)
         if n_to_add > 0:
             new_samples = current_pool[:n_to_add]
             current_pool = current_pool[n_to_add:]
@@ -204,7 +212,7 @@ for run_idx in range(N_REPEATS):
         loss = evaluate(model_current, loader_test_B)
         aggregated_results[target_ratio].append(loss)
         
-        # LOGIQUE DE CHAMPIONNAT : On écrase si meilleur
+        # On écrase si meilleur
         if loss < best_losses[target_ratio]:
             best_losses[target_ratio] = loss
             save_path = os.path.join(SAVE_DIR, f"best_model_ratio_{int(target_ratio*100)}")
@@ -218,6 +226,7 @@ for run_idx in range(N_REPEATS):
 # ==========================================
 # 5. GRAPHIQUE & CSV
 # ==========================================
+
 print("\n[>] Génération du graphique 'benchmark_random.png'...")
 
 final_ratios = [0.0] + TARGET_RATIOS
@@ -249,9 +258,9 @@ plt.xlabel("Pourcentage de données du Domaine B ajoutées (%)")
 plt.ylabel("Erreur MAE")
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.3)
-plt.savefig("benchmark_random2.png", dpi=300)
+plt.savefig("benchmark_random.png", dpi=300)
 
-csv_filename = "resultats_random2.csv"
+csv_filename = "resultats_random.csv"
 with open(csv_filename, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(["Ratio", "Mean MAE", "Std MAE", "Best MAE"] + [f"Run {i+1}" for i in range(N_REPEATS)])

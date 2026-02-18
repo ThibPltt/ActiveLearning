@@ -6,7 +6,12 @@ from transformers import AutoFeatureExtractor, ResNetForImageClassification
 from PIL import Image
 import os
 
-# --- VOTRE DATASET (Copié de votre script) ---
+# Objectif : Ce fichier contient les classes et fonctions nécessaires pour préparer les données, 
+# définir le modèle et entraîner le modèle de régression d'images. 
+# Il est conçu pour être utilisé dans un script d'entraînement principal.
+# resnet-18 est utilisé comme modèle de base pour la régression d'images.
+
+# --- DATASET ---
 class ImageRegressionDataset(Dataset):
     def __init__(self, image_paths, processor):
         self.image_paths = image_paths

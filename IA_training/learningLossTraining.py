@@ -19,6 +19,9 @@ import time  # <--- AJOUT POUR LE CHRONO
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
+
+# Objectif : Stratégie Leaning Loss
+
 logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -35,7 +38,7 @@ LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 5e-4
 MOMENTUM = 0.9
 
-# Paramètres spécifiques "Learning Loss" (Slide 19)
+# Paramètres spécifiques "Learning Loss"
 LAMBDA_LOSS = 1.0  
 MARGIN = 1.0       
 
@@ -45,6 +48,7 @@ if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 # ==========================================
 # 1. CHEMINS & DATASET
 # ==========================================
+
 current_script_dir = Path(__file__).resolve().parent
 dataset_dir = current_script_dir.parent / "FINAL_DATASET"
 if not dataset_dir.exists():
@@ -101,9 +105,10 @@ except:
 ds_test_B = ImageRegressionDataset(test_files_B, processor)
 loader_test_B = DataLoader(ds_test_B, batch_size=BATCH_SIZE, shuffle=False)
 
-# ==========================================
-# 2. ARCHITECTURE DU MODULE (SLIDE 17)
-# ==========================================
+# =============================
+# 2. ARCHITECTURE DU MODULE
+# =============================
+
 class LossPredictionModule(nn.Module):
     def __init__(self): 
         super(LossPredictionModule, self).__init__()
@@ -140,9 +145,10 @@ class ResNetWithFeatures(nn.Module):
         features = outputs.hidden_states[1:] 
         return logits, features
 
-# ==========================================
-# 3. LOSS FUNCTION (SLIDE 18)
-# ==========================================
+# ===================
+# 3. LOSS FUNCTION
+# ===================
+
 def LossPredLoss(input, target, margin=1.0):
     input = input.view(-1) 
     target = target.view(-1) 
@@ -162,6 +168,7 @@ def LossPredLoss(input, target, margin=1.0):
 # ==========================================
 # 4. TRAINING & SELECTION
 # ==========================================
+
 def train_learning_loss(train_files, desc_bar):
     model = ResNetWithFeatures().to(DEVICE)
     module = LossPredictionModule().to(DEVICE)
@@ -227,16 +234,17 @@ def evaluate(model, loader):
             total_loss += loss.item(); count += 1
     return total_loss / count if count > 0 else 0
 
-# ==========================================
+# ===============
 # 5. EXECUTION
-# ==========================================
+# ===============
+
 aggregated_results = {0.0: []}
 for r in TARGET_RATIOS: aggregated_results[r] = []
 best_losses = {r: float('inf') for r in [0.0] + TARGET_RATIOS}
 
 for run_idx in range(N_REPEATS):
     print(f"\n████ RUN {run_idx+1} / {N_REPEATS} ████")
-    start_time = time.time() # CHRONO DEBUT
+    start_time = time.time()
     
     current_train_set = list(base_train_files_A)
     current_pool = list(base_pool_files_B)
@@ -295,6 +303,7 @@ for run_idx in range(N_REPEATS):
 # ==========================================
 # 6. GRAPHIQUE COMPARATIF
 # ==========================================
+
 print("\n[>] Génération graphique 'benchmark_learning_loss.png'...")
 final_ratios = [0.0] + TARGET_RATIOS
 ll_means = [np.mean(aggregated_results[r]) for r in final_ratios]

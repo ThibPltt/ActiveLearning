@@ -24,6 +24,9 @@ from sklearn.preprocessing import normalize
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
+
+# Objectif : Unifier les paramètres pour la stratégie mixte (Data Augmentation + Clustering L2)
+
 logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -38,7 +41,7 @@ EPOCHS = 20
 BATCH_SIZE = 10
 LEARNING_RATE = 1e-4 
 
-# --- PARAMÈTRES CROISÉS (FIDÈLES AUX ORIGINAUX) ---
+# --- PARAMÈTRES CROISÉS ---
 # 1. Paramètres Data Augmentation (Issus de dataAugmTraining.py)
 MC_PASSES = 10                 # Nombre de passages pour l'incertitude
 BATCH_SIZE_UNCERTAINTY = 64    # Batch size accéléré pour l'inférence DataAug
@@ -46,7 +49,7 @@ BATCH_SIZE_UNCERTAINTY = 64    # Batch size accéléré pour l'inférence DataAu
 # 2. Paramètres Clustering L2 (Issus de clusteringTraining.py)
 # (Implicites : Normalisation L2 + K-Means)
 
-# 3. Paramètre de Croisement (Le lien entre les deux)
+# 3. Paramètre de Croisement
 UNCERTAINTY_FACTOR = 3         # On garde les 3x plus incertains pour le clustering
 
 SAVE_DIR = "best_models_mixed"
@@ -55,6 +58,7 @@ if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 # ==========================================
 # 1. CHEMINS & DATASET
 # ==========================================
+
 current_script_dir = Path(__file__).resolve().parent
 dataset_dir = current_script_dir.parent / "FINAL_DATASET"
 if not dataset_dir.exists():
@@ -124,11 +128,13 @@ except:
     processor = ConvNextImageProcessor.from_pretrained(MODEL_NAME)
 
 ds_test_B = ImageRegressionDataset(test_files_B, processor)
+
 loader_test_B = DataLoader(ds_test_B, batch_size=BATCH_SIZE, shuffle=False)
 
 # ==========================================
 # 2. FONCTIONS UTILES
 # ==========================================
+
 def train_model(train_files, desc_bar):
     model = ResNetForImageClassification.from_pretrained(
         MODEL_NAME, num_labels=2, ignore_mismatched_sizes=True
@@ -138,6 +144,7 @@ def train_model(train_files, desc_bar):
     criterion = nn.L1Loss()
     
     train_ds = ImageRegressionDataset(train_files, processor)
+    # Seed différentes pour chaque répétition (Basé sur l'heure actuelle)
     train_ld = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
     
     for _ in tqdm(range(EPOCHS), desc=desc_bar, leave=False, ascii=True):
@@ -190,8 +197,6 @@ def get_uncertainties(model, pool_files):
         # [MC_PASSES, 3, 224, 224]
         batch_input = torch.stack(batch_tensors).to(DEVICE)
         
-        # 3. Inférence en un seul bloc (Rapide grâce à BATCH_SIZE_UNCERTAINTY implicite ici car MC_PASSES est petit)
-        # Si MC_PASSES était > 64, il faudrait sous-batcher, mais à 10 ça passe large.
         with torch.no_grad():
             out = model(batch_input).logits
             preds = torch.sigmoid(out) # [MC_PASSES, 2]
@@ -205,12 +210,13 @@ def get_uncertainties(model, pool_files):
 # ==========================================
 # 3. STRATEGIE MIXTE (CROISEMENT DES PARAMETRES)
 # ==========================================
+
 def query_mixed_strategy(model, pool_files, n_to_add):
     if n_to_add >= len(pool_files):
         return list(range(len(pool_files)))
 
     # --- ETAPE 1 : FILTRAGE PAR INCERTITUDE (Paramètres DataAug) ---
-    # On garde 3x le budget (UNCERTAINTY_FACTOR)
+
     n_candidates = min(len(pool_files), n_to_add * UNCERTAINTY_FACTOR)
     
     uncertainties = get_uncertainties(model, pool_files)
@@ -250,6 +256,7 @@ def evaluate(model, loader):
 # ==========================================
 # 4. EXECUTION
 # ==========================================
+
 aggregated_results = {0.0: []}
 for r in TARGET_RATIOS: aggregated_results[r] = []
 best_losses = {r: float('inf') for r in [0.0] + TARGET_RATIOS}
@@ -317,6 +324,7 @@ for run_idx in range(N_REPEATS):
 # ==========================================
 # 5. GRAPHIQUE COMPARATIF
 # ==========================================
+
 print("\n[>] Génération graphique 'benchmark_mixed_L2_DA.png'...")
 final_ratios = [0.0] + TARGET_RATIOS
 mix_means = [np.mean(aggregated_results[r]) for r in final_ratios]

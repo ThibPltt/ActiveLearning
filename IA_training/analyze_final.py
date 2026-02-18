@@ -14,6 +14,10 @@ import gc
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
+
+# Objectif : Analyser les performances des modèles sur le Domain B Test,
+# en comparant les différentes stratégies d'entraînement.
+
 sys.stdout.reconfigure(encoding='utf-8')
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f">>> GPU ACTIVÉ : {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU'}")
@@ -35,6 +39,7 @@ PATHS = {
 # ==========================================
 # 1. SETUP DONNÉES
 # ==========================================
+
 dataset_dir = Path(r"C:\Users\Megaport\Desktop\PROJET_AL\FINAL_DATASET")
 if not dataset_dir.exists():
     print("ERREUR : Dataset introuvable.")
@@ -253,6 +258,7 @@ def plot_all_strategies():
 # ==========================================
 # MAIN
 # ==========================================
+
 if __name__ == "__main__":
     plot_all_strategies()
     print("\n--- ANALYSE COMPLÈTE TERMINÉE ---")

@@ -8,13 +8,18 @@ import matplotlib.pyplot as plt
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
+
+# Objectif : Simuler une stratégie de prédiction totalement aléatoire (Hasard Total) 
+# pour établir une baseline de performance minimale.
+
 MAX_X = 1920.0
 MAX_Y = 1080.0
-N_REPEATS = 5  # On répète 5 fois chaque image pour lisser la chance
+N_REPEATS = 5  # On répète 5 fois chaque image
 
 # ==========================================
 # 1. CHARGEMENT
 # ==========================================
+
 current_script_dir = Path(__file__).resolve().parent
 project_root = current_script_dir.parent
 
@@ -31,7 +36,7 @@ dir_test_B = dataset_dir / "Domain_B_Test"
 
 # Correction des doublons (Windows .jpg + .JPG)
 raw_files = list(dir_test_B.glob("*.jpg")) + list(dir_test_B.glob("*.JPG"))
-test_files = sorted(list(set(raw_files))) # set() élimine les doublons
+test_files = sorted(list(set(raw_files)))
 
 print(f"--- BASELINE RANDOM (HASARD TOTAL) ---")
 print(f"Images uniques : {len(test_files)}")
@@ -47,6 +52,7 @@ def get_true_coords(filename):
 # ==========================================
 # 2. SIMULATION
 # ==========================================
+
 all_errors = []
 
 for _ in range(N_REPEATS):
@@ -72,6 +78,7 @@ print(f"    Min : {np.min(all_errors):.2f} px | Max : {np.max(all_errors):.2f} p
 # ==========================================
 # 3. GRAPHIQUE (HISTOGRAMME)
 # ==========================================
+
 plt.figure(figsize=(10, 6))
 
 # Histogramme des erreurs

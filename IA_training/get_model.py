@@ -3,6 +3,10 @@ from PIL import Image
 from transformers import AutoFeatureExtractor, ResNetForImageClassification
 
 # Charger le modèle et le processeur sauvegardés
+
+# Objectif : Charger un modèle de régression entraîné pour prédire les 
+# coordonnées (X, Y) à partir d'une image.
+
 model_path = "./mon_modele_regression"
 loaded_processor = AutoFeatureExtractor.from_pretrained(model_path)
 loaded_model = ResNetForImageClassification.from_pretrained(model_path)
@@ -21,12 +25,7 @@ def predict_coords(image_path):
     # On récupère les valeurs normalisées (0-1)
     norm_x, norm_y = outputs[0][0].item(), outputs[0][1].item()
     
-    # Optionnel : Remettre à l'échelle réelle (si vous aviez divisé par 1280 et 720)
-    real_x = norm_x * 1280
-    real_y = norm_y * 720
+    real_x = norm_x * 1920
+    real_y = norm_y * 1080
     
     return real_x, real_y
-
-# Test
-# x, y = predict_coords("chemin/vers/votre/image_test.jpg")
-# print(f"Coordonnées prédites : X={x:.2f}, Y={y:.2f}")

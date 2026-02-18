@@ -5,17 +5,20 @@ from pathlib import Path
 from tqdm import tqdm
 
 # ==========================================
-# 1. CORRECTION DU CHEMIN RACINE
+# 1. CHEMIN RACINE
 # ==========================================
-# C'est ICI que je me trompais avant. J'ai rajouté "ActiveLearning".
+
+# Objectif : Diviser les images en Train/Test/AL pour les Domaines A et B
+
 project_root = Path(r"C:\Users\Megaport\Desktop\PROJET_AL\ActiveLearning")
 
 source_dir = project_root / "processed_frames"
-dest_root = project_root.parent / "FINAL_DATASET" # On le met à la racine du PROJET pour être propre
+dest_root = project_root.parent / "FINAL_DATASET"
 
 # ==========================================
 # 2. DEFINITION DES SOURCES SPÉCIFIQUES
 # ==========================================
+
 src_A_root = source_dir / "Domain_A"
 src_B_root = source_dir / "Domain_B"
 
@@ -45,25 +48,24 @@ def get_images_flattened(root_folder, domain_type):
     valid_ext = [".jpg", ".JPG", ".jpeg", ".png"]
     
     if not root_folder.exists():
-        print(f"!!! ERREUR : Le dossier {root_folder} n'existe pas !!!")
+        print(f"!!! ERREUR : Le dossier {root_folder} n'existe pas !")
         return []
 
     # --- LOGIQUE POUR DOMAINE A (Sous-dossier vidéo) ---
     if domain_type == "A":
-        # On prend tout ce qu'il y a dans les sous-dossiers (ex: video_2026...)
+        # On prend tout ce qu'il y a dans les sous-dossiers
         for path in root_folder.rglob("*"):
             if path.suffix in valid_ext:
                 images.append(path)
                 
     # --- LOGIQUE POUR DOMAINE B (Dossiers 1 à 12) ---
     elif domain_type == "B":
-        # On parcourt explicitement les dossiers 1, 2, ... 12
         # On va même chercher large : tous les dossiers qu'on trouve
         subfolders = [f for f in root_folder.iterdir() if f.is_dir()]
         print(f"   [INFO] Domaine B : trouvé {len(subfolders)} sous-dossiers (ex: {subfolders[0].name}...)")
         
         for sub in subfolders:
-            for path in sub.glob("*"): # On regarde dedans
+            for path in sub.glob("*"):
                 if path.suffix in valid_ext:
                     images.append(path)
 
@@ -79,13 +81,14 @@ def copy_files(file_list, destination, desc):
 # ==========================================
 # 3. EXECUTION
 # ==========================================
+
 print(f"--- DÉMARRAGE AVEC CHEMIN CORRIGÉ ---")
 print(f"Racine : {source_dir}")
 
 setup_directories()
 
 # --- TRAITEMENT A ---
-print("\n[1/2] Récupération Domaine A (Arthur)...")
+print("\n[1/2] Récupération Domaine A...")
 files_A = get_images_flattened(src_A_root, "A")
 
 if not files_A:

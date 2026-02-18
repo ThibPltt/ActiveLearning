@@ -6,6 +6,10 @@ import sys
 # ==========================================
 # CONFIGURATION
 # ==========================================
+
+# Objectif : Trouver les dossiers de modèles et estimer le temps 
+# de formation à partir des timestamps des fichiers
+
 TARGET_FOLDERS = [
     "best_models_random",
     "best_models_dropout_0.25",
@@ -21,7 +25,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 # On part du dossier du script et on remonte à la racine du projet
 current_script_dir = Path(__file__).resolve().parent
-project_root = current_script_dir.parent # C:\Users\Megaport\Desktop\PROJET_AL
+project_root = current_script_dir.parent
 
 print(f"--- RECHERCHE ET ANALYSE DES TEMPS ---")
 print(f"Racine de recherche : {project_root}")
@@ -42,7 +46,6 @@ for folder_name in TARGET_FOLDERS:
         continue
 
     print(f"\n[TROUVÉ] : {folder_name}")
-    # print(f"   Chemin : {found_path}") 
     
     timestamps = []
     

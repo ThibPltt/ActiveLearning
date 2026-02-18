@@ -12,7 +12,11 @@ from tqdm import tqdm
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
-# Nombre d'images à tester pour la moyenne
+
+# Objectif : Benchmark massif de toutes les stratégies sur un échantillon de 5000 images,
+# en utilisant les modèles "Ratio 50%" (meilleurs modèles actuellement disponibles).
+
+# Nombre d'images à tester pour la moyenne, il y a 4102 images au total dans Test B
 N_SAMPLES = 5000  
 
 # Stratégies à comparer
@@ -34,6 +38,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # ==========================================
 # 1. PRÉPARATION DES DONNÉES
 # ==========================================
+
 current_script_dir = Path(__file__).resolve().parent
 project_root = current_script_dir.parent
 
@@ -66,6 +71,7 @@ print(f"Cible : Modèles Ratio 50%")
 # ==========================================
 # 2. FONCTIONS UTILES
 # ==========================================
+
 def get_coords(filename):
     try:
         name = filename.replace('.jpg', '').replace('.JPG', '')
@@ -76,13 +82,14 @@ def get_coords(filename):
     except:
         return MAX_X/2, MAX_Y/2
 
-# Dictionnaire pour stocker les résultats : {"Random": [err1, err2...], ...}
+# Dictionnaire pour stocker les résultats
 results_data = {name: [] for name, _ in STRATEGIES}
 mean_scores = {}
 
 # ==========================================
 # 3. BOUCLE PAR STRATÉGIE (Pour économiser le GPU)
 # ==========================================
+
 for strat_name, folder_name in STRATEGIES:
     print(f"\n>>> Test de la stratégie : {strat_name}")
     
@@ -149,6 +156,7 @@ for strat_name, folder_name in STRATEGIES:
 # ==========================================
 # 4. RÉSULTATS & GRAPHIQUE (BOX PLOT)
 # ==========================================
+
 print("\n" + "="*40)
 print("CLASSEMENT FINAL (Basé sur 1000 images)")
 print("="*40)
@@ -178,7 +186,7 @@ color_map = {
     "Mixte": "cyan"
 }
 
-for name in [k for k, v in sorted_strats]: # On affiche dans l'ordre du classement
+for name in [k for k, v in sorted_strats]:
     data = results_data[name]
     if data:
         plot_data.append(data)
@@ -187,7 +195,6 @@ for name in [k for k, v in sorted_strats]: # On affiche dans l'ordre du classeme
 
 # Création du Box Plot
 bplot = plt.boxplot(plot_data, labels=plot_labels, patch_artist=True, showfliers=False) 
-# showfliers=False cache les points aberrants extrêmes pour garder le graphe lisible
 
 # Coloriage
 for patch, color in zip(bplot['boxes'], colors):

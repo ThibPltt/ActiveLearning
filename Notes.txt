@@ -96,7 +96,5 @@ FAIT :
 ((((ALORS, temps de calcul de chacun : VOIR logsTEMPS.txt
 Prédiction du plus proche : VOIR logs.PREDICTION.txt))))
 
-ON EST ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-perspectives : Grad-Cam (resnet-18) -> heatmap des éléments qui sont importants
--> la où il va mettre plus de poids
+Terminé !

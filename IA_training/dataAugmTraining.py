@@ -17,6 +17,10 @@ from scipy.interpolate import make_interp_spline
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
+
+# Objectif : Implémenter une stratégie d'Active Learning basée sur la Data Augmentation (TTA) 
+# pour sélectionner les échantillons les plus incertains du pool.
+
 logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -49,6 +53,7 @@ if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 # ==========================================
 # 1. CHEMINS & DATASET
 # ==========================================
+
 current_script_dir = Path(__file__).resolve().parent
 dataset_dir = current_script_dir.parent / "FINAL_DATASET"
 
@@ -116,13 +121,11 @@ loader_test_B = DataLoader(ds_test_B, batch_size=BATCH_SIZE, shuffle=False, num_
 # ==========================================
 # 3. FONCTIONS
 # ==========================================
+
 def train_model(train_files, desc_bar):
     model = ResNetForImageClassification.from_pretrained(
         MODEL_NAME, num_labels=2, ignore_mismatched_sizes=True
     ).to(DEVICE)
-    
-    # Pas de Dropout spécifique ici, on utilise l'architecture standard
-    # car l'incertitude vient des données, pas du modèle.
     
     model.train()
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
@@ -217,6 +220,7 @@ def compute_uncertainty_TTA(model, candidate_files):
 # ==========================================
 # 4. EXECUTION
 # ==========================================
+
 aggregated_results = {0.0: []}
 for r in TARGET_RATIOS: aggregated_results[r] = []
 best_losses = {r: float('inf') for r in [0.0] + TARGET_RATIOS}
@@ -252,7 +256,7 @@ for run_idx in range(N_REPEATS):
         n_to_add = target_count - accumulated_count
         
         if n_to_add > 0:
-            # ICI : Appel à la nouvelle fonction TTA
+            # Appel à la nouvelle fonction TTA
             ranked_indices = compute_uncertainty_TTA(model_current, current_pool)
             
             top_indices = [idx for idx, score in ranked_indices[:n_to_add]]
@@ -285,6 +289,7 @@ for run_idx in range(N_REPEATS):
 # ==========================================
 # 5. GRAPHIQUE FINAL COMPARATIF
 # ==========================================
+
 print("\n[>] Génération du graphique 'benchmark_data_aug.png'...")
 
 final_ratios = [0.0] + TARGET_RATIOS

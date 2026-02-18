@@ -13,6 +13,10 @@ import sys
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
+
+# Objectif : Diagnostiquer la différence de performances entre les Domaines A et B 
+# en entraînant un modèle de base sur A et en évaluant sa performance sur A et B.
+
 logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 

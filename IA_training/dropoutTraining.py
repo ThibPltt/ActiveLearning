@@ -14,9 +14,13 @@ import shutil
 import csv
 from scipy.interpolate import make_interp_spline 
 
-# ==========================================
-# 0. CONFIGURATION (OPTIMISÉE GPU RTX 2070)
-# ==========================================
+# ====================
+# 0. CONFIGURATION
+# ====================
+
+# Objectif : Implémenter une stratégie d'Active Learning basée sur le Dropout pour 
+# sélectionner les échantillons les plus incertains du pool.
+
 logging.set_verbosity_error()
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -38,7 +42,7 @@ N_REPEATS = 3
 # Config Dropout
 MC_PASSES = 10           
 BATCH_SIZE_UNCERTAINTY = 64
-DROPOUT_RATE = 0.25      # <--- Taux modifié
+DROPOUT_RATE = 0.25
 
 EPOCHS = 20      
 BATCH_SIZE = 10
@@ -51,6 +55,7 @@ if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
 # ==========================================
 # 1. DATASET & CHEMINS (FINAL_DATASET)
 # ==========================================
+
 current_script_dir = Path(__file__).resolve().parent
 dataset_dir = current_script_dir.parent.parent / "FINAL_DATASET"
 
@@ -122,6 +127,7 @@ loader_test_B = DataLoader(ds_test_B, batch_size=BATCH_SIZE, shuffle=False)
 # ==========================================
 # 3. FONCTIONS
 # ==========================================
+
 def train_model(train_files, desc_bar):
     model = ResNetForImageClassification.from_pretrained(
         MODEL_NAME, num_labels=2, ignore_mismatched_sizes=True
@@ -194,6 +200,7 @@ def compute_uncertainty_dropout(model, candidate_files):
 # ==========================================
 # 4. EXECUTION
 # ==========================================
+
 aggregated_results = {0.0: []}
 for r in TARGET_RATIOS: aggregated_results[r] = []
 best_losses = {r: float('inf') for r in [0.0] + TARGET_RATIOS}
@@ -260,6 +267,7 @@ for run_idx in range(N_REPEATS):
 # ==========================================
 # 5. GRAPHIQUE FINAL COMPARATIF
 # ==========================================
+
 print("\n[>] Génération du graphique 'benchmark_dropout_0.25.png'...")
 
 final_ratios = [0.0] + TARGET_RATIOS

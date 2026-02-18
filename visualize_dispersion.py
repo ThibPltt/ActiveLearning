@@ -11,8 +11,10 @@ import sys
 # ==========================================
 # 0. CONFIGURATION
 # ==========================================
-# Liste complète des stratégies à afficher
-# Format : (Nom Affiché, Nom Dossier, Couleur, Forme du point)
+
+# Objectif : montrer les performances relatives de chaque stratégie sur une même image, 
+# en utilisant les modèles "Ratio 50%" (meilleurs modèles actuellement disponibles).
+
 STRATEGIES = [
     ("Random", "best_models_random", "gray", "o"),            # Rond Gris
     ("Dropout 0.25", "best_models_dropout_0.25", "red", "v"),   # Triangle bas Rouge
@@ -23,7 +25,7 @@ STRATEGIES = [
     ("Mixte", "best_models_mixed", "cyan", "P")             # Pentagone Cyan
 ]
 
-# On vise les champions (Ratio 50%)
+# On vise les meilleurs loss
 TARGET_SUBFOLDER = "best_model_ratio_50"
 
 MAX_X = 1920.0
@@ -33,6 +35,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # ==========================================
 # 1. RECHERCHE ROBUSTE
 # ==========================================
+
 sys.stdout.reconfigure(encoding='utf-8')
 current_script_dir = Path(__file__).resolve().parent
 project_root = current_script_dir.parent 
@@ -44,7 +47,7 @@ def find_path_recursive(root_path, target_name):
             return Path(root) / target_name
     return None
 
-# Recherche du Dataset
+# Recherche du Dataset Split, avec les données de train, test et AL
 dataset_dir = find_path_recursive(project_root, "FINAL_DATASET")
 if not dataset_dir:
     print("Erreur: FINAL_DATASET introuvable.")
@@ -65,6 +68,7 @@ print(f"Image : {target_image_path.name}")
 # ==========================================
 # 2. VÉRITÉ TERRAIN
 # ==========================================
+
 def get_coords(filename):
     try:
         name = filename.replace('.jpg', '').replace('.JPG', '')
@@ -79,9 +83,10 @@ pil_image = Image.open(target_image_path).convert("RGB")
 # ==========================================
 # 3. CALCULS ET PLOT
 # ==========================================
+
 plt.figure(figsize=(12, 10))
 ax = plt.gca()
-ax.invert_yaxis() # Important : 0 en haut pour les images
+ax.invert_yaxis()
 
 # CIBLE (VRAI)
 plt.scatter(true_x, true_y, c='lime', s=400, marker='+', linewidth=4, label='VRAI (Cible)', zorder=10)
@@ -122,7 +127,7 @@ for strat_name, folder_name, color, marker in STRATEGIES:
                 
                 # 4. Plot
                 plt.scatter(pred_x, pred_y, c=color, s=200, marker=marker, label=f"{strat_name}", zorder=5)
-                # Ligne pointillée reliant à la vérité
+                
                 plt.plot([true_x, pred_x], [true_y, pred_y], color=color, linestyle='--', alpha=0.5)
                 
                 # Zoom boundaries
@@ -139,18 +144,19 @@ for strat_name, folder_name, color, marker in STRATEGIES:
 # ==========================================
 # 4. FINALISATION
 # ==========================================
+
 plt.title(f"Précision des Stratégies (Modèles Ratio 50%)\nImage: {target_image_path.name}", fontsize=14, fontweight='bold')
 plt.xlabel("Position X (pixels)")
 plt.ylabel("Position Y (pixels)")
 plt.legend(loc='best', shadow=True, fontsize=11)
 plt.grid(True, linestyle=':', alpha=0.6)
 
-# Zoom intelligent (Marge de 150px)
+# Zoom
 margin = 150
 plt.xlim(min_x - margin, max_x + margin)
 plt.ylim(max_y + margin, min_y - margin) # Y inversé
 
-filename = "graphique_dispersion2.png"
+filename = "graphique_dispersion.png"
 plt.savefig(filename, dpi=300)
 print(f"\n[OK] Graphique sauvegardé : {filename}")
 plt.show()
