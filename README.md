@@ -41,12 +41,12 @@ Assurez-vous d'avoir les dépendances nécessaires pour l'entraînement et l'ana
 Bash
 pip install torch torchvision transformers scikit-learn matplotlib seaborn pandas tqdm pillow
 
-Stratégie,Type,Description
-Random,    Baseline,    Sélection aléatoire. Sert de référence pour valider l'intelligence des autres méthodes.
-MC Dropout,    Uncertainty,    Estime l'incertitude via la variance de plusieurs passes stochastiques (Dropout actif en inférence).
-Data Augmentation,    Uncertainty,    "Mesure la stabilité des prédictions sur une image perturbée (rotations, bruit). Si la prédiction bouge beaucoup = Incertitude élevée."
-Clustering L2,    Diversity,    Utilise K-Means sur les embeddings normalisés (L2) pour couvrir tout l'espace géométrique et éviter la redondance.
-Mixte (L2 + DA),    Hybride,    "Approche en entonnoir : Sélectionne d'abord les 300 images les plus incertaines (via Data Aug), puis filtre pour garder les 100 plus diversifiées (via Clustering)."
+Stratégies
+Random,    Baseline,
+MC Dropout,    Uncertainty
+Data Augmentation,    Uncertainty,
+Clustering L2,    Diversity,
+Mixte (L2 + DA),    Hybride
 
 ## 📊 Résultats & Analyse
 ### 1. Performance Globale (Précision)
