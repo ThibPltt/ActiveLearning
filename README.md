@@ -88,18 +88,61 @@ Each strategy picks the images of domain B to add to the training set. All of th
 | **Learning Loss** | predict its own errors | The model predicts the error it will make; the images with the largest expected errors are kept. |
 | **Mix** | clustering L2 + Data Augmentation | Data Augmentation spots the most problematic images, clustering picks the most varied among them. |
 
-What came out of each family:
+On the charts below: across, the percentage of domain B added to the training set; up, the MAE loss on the test set (lower is better). The vertical bars give the standard deviation over the three repetitions, the stars the best result obtained (chart labels in French).
 
-- **Random** (1 h 13 of training) is the reference curve for all the others.
-- **MC Dropout** never beats random. 25% does better than 50%: switching off too many neurons biases the model, which no longer learns to predict the right coordinates (1 h 18).
-- **Data Augmentation** gives mixed results, with no better loss than random (1 h 46).
-- **Clustering** is the most satisfying family. Plain K-Means links images with close features and diversifies little; with L2 normalisation, every image is brought to the same norm, so what counts is how its features differ: a true geometric diversity. With 50% of domain B, clustering L2 beats random: 0.0331 against 0.0362 (2 h 40).
-- **Learning Loss** fails here: the module that predicts the error, very noisy at first, takes over the learning, and the model neglects the coordinates. The method suits classification better than an error in pixels (1 h 50).
-- **Mix** does not beat random selection (2 h 34).
+## The reference: random
 
-<img src="IA_training/benchmark_clustering_L2.png" width="100%" alt="MAE loss curves against the percentage of domain B added: clustering L2 in orange closely follows random and the first clustering, below Dropout 25% and Data Augmentation; its best result reaches 0.033 at 50%.">
+The simplest strategy: images taken at random from domain B. Its curve is the reference for all the others. Training: 1 h 13.
 
-<sub>Clustering with L2 normalisation (orange), against random, Dropout 25%, Data Augmentation and the first clustering. Across, the percentage of domain B added; up, the MAE loss on the test set (lower is better); stars mark the best result.</sub>
+<img src="IA_training/benchmark_random.png" width="100%" alt="MAE loss curve of random selection: about 0.24 without any domain B image, 0.11 at 5%, 0.06 at 20% and 0.04 at 50%, with its standard deviation bars.">
+
+<sub>Random selection on domain B: mean of the three repetitions and best result (red stars).</sub>
+
+## Uncertainty sampling: the model is not sure of a label
+
+**MC Dropout.** Two settings: 50% then 25% of the neurons switched off, to create variation. Neither does better than random, but 25% beats 50%: switching off too many neurons biases the model, which no longer links the images together and does not learn to predict the right coordinates. Training: 1 h 18.
+
+**Data Augmentation (adversarial data).** Each image is copied ten times, with a changed brightness or added blur, and the model predicts the coordinates on every copy: a way to cope with brightness and contrast issues, and to focus on the pupil rather than the pixels. Mixed results: no better loss than random. Training: 1 h 46.
+
+<table>
+<tr>
+<td width="50%"><img src="IA_training/benchmark_dropout_0.25.png" width="100%" alt="MAE loss curves: Dropout 25% in green, slightly below Dropout 50% and above random, at about 0.045 at 50% of domain B."></td>
+<td width="50%"><img src="IA_training/benchmark_data_aug.png" width="100%" alt="MAE loss curves: Data Augmentation in blue stays above random and Dropout 25% up to 20% of domain B, then joins them at about 0.045 at 50%."></td>
+</tr>
+<tr>
+<td align="center"><sub>MC Dropout 25% (green), against random and Dropout 50%.</sub></td>
+<td align="center"><sub>Data Augmentation (blue), against random and Dropout 25%.</sub></td>
+</tr>
+</table>
+
+## Diversity sampling: the model looks for new labels
+
+The family with the most satisfying results. Two approaches:
+
+- **K-Means**, which splits the whole set of images into clusters. It links images with close features (a short distance to the centre): it diversifies little and focuses on what they have in common.
+- **K-Means with L2 normalisation:** every image is brought to the same norm, as if on a sphere. What then counts is how its features differ, hence a true geometric diversity and better learning. There are as many clusters as images to pick.
+
+With 50% of domain B, clustering L2 does better than random: a loss of 0.0331 against 0.0362. Training: 2 h 40.
+
+<img src="IA_training/benchmark_clustering_L2.png" width="100%" alt="MAE loss curves: clustering L2 in orange closely follows random and the first clustering, below Dropout 25% and Data Augmentation; its best result reaches 0.033 at 50% of domain B.">
+
+<sub>Clustering with L2 normalisation (orange), against random, Dropout 25%, Data Augmentation and the first clustering.</sub>
+
+## Predict its own errors: Learning Loss
+
+The model tries to reduce two errors at once: that of the coordinates, and that of the prediction of its own error. This second module, very noisy at first, takes over the learning: the model focuses on predicting its error and neglects the coordinates. The method suits classification (a cat or a dog) better than an error in pixels, which is less clear-cut. Training: 1 h 50.
+
+<img src="IA_training/benchmark_learning_loss.png" width="100%" alt="MAE loss curves: Learning Loss in red stays well above random, clustering and Dropout 25%, from 0.29 at the start to about 0.13 at 50% of domain B.">
+
+<sub>Learning Loss (red), against random, clustering and Dropout 25%.</sub>
+
+## Mixing the best strategies
+
+A last attempt: combining an uncertainty strategy and a diversity strategy, those that gave the best predictions. Data Augmentation spots the most problematic images, then clustering L2 picks the most varied among them. Training: 2 h 34. This last training does not beat random selection.
+
+<img src="IA_training/benchmark_mixed_L2_DA.png" width="100%" alt="MAE loss curves: the mix in magenta stays above clustering L2 and random up to 20% of domain B, then joins them at about 0.04 at 50%.">
+
+<sub>The mix (magenta), against its two components and random.</sub>
 
 ## Results
 
