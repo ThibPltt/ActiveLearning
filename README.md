@@ -184,7 +184,7 @@ To compare the predictions in pixels, each best model (the one at 50% of domain 
 | `dummy_test.py`, `diagnostic.py`, `get_training_time.py` | Random-guess baseline, domain gap check, training times. |
 | `DataCollection/`, `DataProcessing/`, `processed_frames/` | Recording (the bouncing point and the webcam) and the extracted frames. |
 | `IA_training/best_models_*` | The best model saved at each step, for each strategy. |
-| `Notes.txt`, [`README.fr.md`](README.fr.md) | My working notes and the original README, in French. |
+| `Notes.txt`, [`Historic_README.md`](Historic_README.md) | My working notes and the original README, in French. |
 
 The branch `main` holds the shared dataset; `Arthur` and `Suzanne` hold the other two studies.
 
