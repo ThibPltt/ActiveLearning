@@ -1,70 +1,135 @@
-<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ThibPltt/ThibPltt/main/assets/repos/ActiveLearning-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ThibPltt/ThibPltt/main/assets/repos/ActiveLearning-light.svg"><img src="https://raw.githubusercontent.com/ThibPltt/ThibPltt/main/assets/repos/ActiveLearning-light.svg" width="100%" alt="Active Learning, 2026: webcam gaze tracking with ResNet-18 and active learning, Python and PyTorch."></picture>
+<a href="https://thibautplatet.com/en/projects/active-learning.html"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ThibPltt/ThibPltt/main/assets/repos/ActiveLearning-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ThibPltt/ThibPltt/main/assets/repos/ActiveLearning-light.svg"><img src="https://raw.githubusercontent.com/ThibPltt/ThibPltt/main/assets/repos/ActiveLearning-light.svg" width="100%" alt="Active Learning, 2026: eye-tracking prediction with a plain camera and active learning, ResNet-18, Python and PyTorch."></picture></a>
 
-# Active Learning · gaze tracking
+# Active Learning · eye-tracking prediction
 
-Predicting where a person looks on screen from a webcam image, while labelling as few new images as possible.
+Predicting where a person looks on the screen with a plain computer camera, choosing the images worth training on through active learning.
 
-<img src="IA_training/FULL_1_MOYENNES.png" width="100%" alt="Bar chart of the mean error in pixels for each strategy, before and after adding half of the new domain: Random 508 to 80, MC Dropout 503 to 505, Data augmentation 582 to 89, Clustering L2 463 to 76, Mixed 522 to 67.">
+<img src="IA_training/FULL_1_MOYENNES.png" width="100%" alt="Bar chart: mean error in pixels of five strategies, before (domain A only) and after adding 50% of domain B. Random: 508 then 80; Dropout: 503 then 505; Data Augmentation: 582 then 89; clustering L2: 463 then 76; mixed: 522 then 67.">
 
 | At a glance | |
 |---|---|
-| **Dates** | January – February 2026 |
-| **Context** | deep learning · course project · ENSIM / Le Mans Université, 5th year |
-| **Technologies** | Python · PyTorch · Hugging Face Transformers (ResNet-18) · scikit-learn · Matplotlib |
+| **Dates** | 2026 |
+| **Context** | active learning · personal study, data recorded as a team of 3 · ENSIM |
+| **Technologies** | Active Learning · Deep Learning · ResNet-18 · Python · PyTorch |
+| **Case study** | [thibautplatet.com/en/projects/active-learning.html](https://thibautplatet.com/en/projects/active-learning.html) |
 | **Supervisor** | Meysam Shamsi |
 
 ## Problem
 
-A webcam is far cheaper than an infrared eye tracker, but a model that predicts the gaze from a webcam image loses its accuracy as soon as the person, the light, the background or the accessories change. Labelling new images for every new condition is slow. Which images are worth labelling first?
+Eye-tracking devices rely on infrared cameras, which are costly and need calibrating. Can a plain camera and an AI replace them, and does active learning help when the person, the background, the light or the accessories change?
 
 ## Role
 
-Course project, ENSIM 5th year. The dataset was recorded and prepared together with Arthur Lecureur and Suzanne G-C (branch `main`); each student then ran their own study on their own branch. This branch, `Thibaut`, holds mine: the training protocol, the selection strategies, the evaluation and the bias analysis.
+Final-year course project: the dataset was recorded as a team of 3, then each student ran their own study. Mine, on this branch: training protocol, selection strategies, evaluation and bias analysis.
 
 ## Decisions
 
-- **Regression rather than classification:** a pretrained ResNet-18 (`microsoft/resnet-18`) whose head outputs the (x, y) position of the gaze, normalised on a 1920 × 1080 screen.
-- **Two domains:** domain A, one person, used to train the starting model; domain B, several people and conditions, used as the pool of images to label and as the final test.
-- **A fair protocol:** domain A split 75 % train / 25 % test, domain B split 80 % pool / 20 % test; images are added to the training set step by step (1, 2, 5, 10, 20 then 50 % of the pool), 20 epochs per step, 3 repetitions per strategy, and every score is measured on the test sets only.
+A regression with a ResNet-18 that predicts the coordinates of the point being looked at; a reference domain (one person) and a target domain (four people, two computers, varied backgrounds, accessories and light); each strategy retrained from scratch, in steps from 1 to 50% of the target domain, three times to measure the standard deviation.
 
 ## Result
 
-A model trained only on domain A makes 6.5 times more error on domain B (MAE 0.0357 against 0.2303): the domain gap is real. Once half of the pool is labelled, the **mixed strategy** (clustering L2 + data augmentation) gives the best accuracy, **67 px** of mean error, against 80 px when the images are picked at random. MC Dropout fails: the model collapses towards the centre of the screen.
+Without new images, the error is 6.5 times higher on the target domain. Clustering with L2 normalisation reaches the lowest error (MAE 0.0331 against 0.0362 at random), but random selection wins almost every time: in this context, the starting hypothesis is not confirmed.
 
-## The strategies
+## The idea
 
-| Strategy | Family | How images are chosen |
+The goal: an eye-tracking system with a plain computer camera. The face of a person following a moving point on the screen with their eyes is filmed; an AI then learns, image by image, to find where they are looking. A standard camera would make the experiment simpler to set up, cheaper and greener than infrared devices.
+
+Active learning targets, among a large number of images, those that bring the most information to the model. The study’s hypothesis: it helps predict the coordinates of the point being looked at.
+
+## Capturing the images
+
+Each recording lasts 30 seconds. The person, sitting in front of a laptop screen, keeps still: only their gaze follows the point.
+
+- The point bounces off the edges of the screen and changes colour, like the DVD logo; its path is drawn at random for each recording.
+- The computer’s camera films the face while the coordinates of the point are recorded alongside.
+- The videos are cut into images, each carrying the point’s coordinates in its name. Every image is handled on its own, not as part of a sequence.
+
+## Data and protocol
+
+Two domains. Domain A, one person in a single setting, is the reference. Domain B brings together four people and twelve recordings: two computers, two backgrounds (classroom, white wall), accessories (cap, glasses, mask) and bright or dim light.
+
+| Images | Domain A | Domain B |
 |---|---|---|
-| Random | baseline | Picked at random in the pool. |
-| MC Dropout (0.5 and 0.25) | uncertainty | 10 predictions with dropout on; the images with the most spread are labelled. |
-| Data augmentation | uncertainty | 10 altered copies of each image (light noise, brightness); the images whose predictions vary most are labelled. |
-| Clustering, Clustering L2 | diversity | K-means on the image features (with or without L2 normalisation); the image closest to each centre is labelled. |
-| Learning Loss | uncertainty | A small extra head learns to predict the model’s own error. |
-| Mixed (L2 + DA) | hybrid | Uncertainty first: the 3× most uncertain images (data augmentation) are kept, then one image per cluster among them (clustering L2). |
+| Training | 647 | 8,202 |
+| Test | 216 | 2,051 |
+
+Domain A: three quarters of the images for training, one quarter for the test. Domain B: 80% make up the pool the strategies draw from, 20% the test.
+
+- **Model:** a ResNet-18 (`microsoft/resnet-18`) used for regression, which predicts for each image the coordinates of the point on the screen.
+- **Training:** 20 epochs, batches of 10 images, a learning rate of 0.0001, the mean absolute error (MAE) as loss and the AdamW optimiser.
+- **Steps:** training on domain A, then 1, 2, 5, 10, 20 and 50% of domain B added incrementally; each step keeps the images of the previous ones. The loss is measured on the domain B test set.
+- **Repetitions:** three, with different seeds, to compute a standard deviation and check that a result is not a lucky draw.
+- **Fair start:** each strategy starts from scratch; starting from a model already trained by another strategy would bias the comparison.
+- **Time:** about 15 minutes for the first training on domain A, 1 h 40 on average for a strategy’s full session.
+
+Two starting measures. A dummy model, which points at random on the screen without looking at the images, is 772 pixels off on average. The model trained on domain A alone makes 6.5 times more error on domain B than on A: it has learnt domain A, and domain B remains to be learnt.
+
+<table>
+<tr>
+<td width="50%"><img src="dummy_results.png" width="100%" alt="Histogram of the errors in pixels of a model pointing at random, from 0 to about 2,000 pixels, with a mean of 772 pixels."></td>
+<td width="50%"><img src="compare_trainA_testA_testB.png" width="100%" alt="Bar chart of the mean absolute error: 0.0357 on domain A, 0.2303 on domain B, a loss 6.5 times higher."></td>
+</tr>
+<tr>
+<td align="center"><sub>The dummy model: 772 px off on average.</sub></td>
+<td align="center"><sub>The model trained on domain A: MAE 0.0357 on A, 0.2303 on B.</sub></td>
+</tr>
+</table>
+
+## The strategies compared
+
+Each strategy picks the images of domain B to add to the training set. All of them are compared with random selection.
+
+| Strategy | Family | How the images are chosen |
+|---|---|---|
+| **Random** | reference | At random in the pool. |
+| **MC Dropout** (50% and 25%) | uncertainty sampling | Ten predictions per image, with neurons switched off at random; the images where they vary most, those the model is not sure of, are kept. |
+| **Data Augmentation** | uncertainty sampling | Ten copies of each image, brighter or darker, noisy or blurred; the images with the least stable predictions are kept. |
+| **Clustering** (K-Means, then L2 normalisation) | diversity sampling | The images are grouped into clusters; the sample closest to the centre of each cluster is kept. |
+| **Learning Loss** | predict its own errors | The model predicts the error it will make; the images with the largest expected errors are kept. |
+| **Mix** | clustering L2 + Data Augmentation | Data Augmentation spots the most problematic images, clustering picks the most varied among them. |
+
+What came out of each family:
+
+- **Random** (1 h 13 of training) is the reference curve for all the others.
+- **MC Dropout** never beats random. 25% does better than 50%: switching off too many neurons biases the model, which no longer learns to predict the right coordinates (1 h 18).
+- **Data Augmentation** gives mixed results, with no better loss than random (1 h 46).
+- **Clustering** is the most satisfying family. Plain K-Means links images with close features and diversifies little; with L2 normalisation, every image is brought to the same norm, so what counts is how its features differ: a true geometric diversity. With 50% of domain B, clustering L2 beats random: 0.0331 against 0.0362 (2 h 40).
+- **Learning Loss** fails here: the module that predicts the error, very noisy at first, takes over the learning, and the model neglects the coordinates. The method suits classification better than an error in pixels (1 h 50).
+- **Mix** does not beat random selection (2 h 34).
+
+<img src="IA_training/benchmark_clustering_L2.png" width="100%" alt="MAE loss curves against the percentage of domain B added: clustering L2 in orange closely follows random and the first clustering, below Dropout 25% and Data Augmentation; its best result reaches 0.033 at 50%.">
+
+<sub>Clustering with L2 normalisation (orange), against random, Dropout 25%, Data Augmentation and the first clustering. Across, the percentage of domain B added; up, the MAE loss on the test set (lower is better); stars mark the best result.</sub>
 
 ## Results
 
-Mean error on the domain B test set, in pixels on a 1920 × 1080 screen, before (domain A only) and after adding 50 % of the pool:
+| | |
+|---|---|
+| **× 6.5** | more error on domain B for the model trained on domain A alone (MAE 0.2303 against 0.0357) |
+| **772 px** | mean error of a dummy model pointing at random |
+| **0.0331** | best loss with 50% of domain B: clustering L2 (0.0362 at random) |
+| **10,253** | images in domain B, for four people and twelve settings |
 
-| Strategy | Before | After |
-|---|---|---|
-| Random | 508 | 80 |
-| MC Dropout | 503 | 505 |
-| Data augmentation | 582 | 89 |
-| Clustering L2 | 463 | 76 |
-| **Mixed (L2 + DA)** | 522 | **67** |
+| MAE loss with 50% of domain B | Loss |
+|---|---|
+| Random | 0.0362 |
+| Dropout 25% | 0.0427 |
+| Data Augmentation | 0.0406 |
+| **Clustering L2** | **0.0331** |
+| Learning Loss | 0.1121 |
+| Mix (L2 + Data Augmentation) | 0.0341 |
 
-For reference, a prediction drawn completely at random is 772 px off on average (`dummy_test.py`).
+To compare the predictions in pixels, each best model (the one at 50% of domain B) predicted the coordinates on every test image of domain B: the chart at the top gives the mean error of each strategy, before and after adding 50% of domain B. Almost every strategy brings the error far below that of the starting model, but compared with random, they do not always do better.
 
-<img src="compare_trainA_testA_testB.png" width="100%" alt="Domain gap diagnostic: mean absolute error of 0.0357 on domain A against 0.2303 on domain B, 6.5 times more.">
+<img src="graphique_dispersion.png" width="100%" alt="Scatter plot on one test image: the true position of the point and the predictions of the eight models. Most land within 150 pixels of the target; Dropout 25% lands far to the right.">
 
-**Robustness.** Accuracy has a cost: the mixed strategy makes the model slightly more sensitive to perturbations (+4.7 px of jitter), while data augmentation is the only accurate strategy that makes it steadier (−2.0 px). The drop for MC Dropout (−12.8 px) only reflects its collapse towards the centre.
+<sub>The predictions of the eight models for the same image, around the true position of the point.</sub>
 
-<img src="IA_training/FULL_3_ROBUSTESSE.png" width="100%" alt="Bar chart of the jitter score before and after for each strategy: Random +1.3, Dropout −12.8, Data augmentation −2.0, Clustering L2 +4.1, Mixed +4.7 pixels.">
+<img src="BIAS_1_SPATIAL.png" width="100%" alt="Five scatter plots, one per strategy, of the positions predicted on the screen. The Dropout predictions gather in the centre; for the others, the top-left corner is denser.">
 
-**Biases.** All models predict the top-left corner of the screen better. Across the four people of domain B, the mixed strategy spreads the error more evenly, whereas MC Dropout fails for everyone.
+<sub>Where each strategy’s predictions land: the top-left corner of the screen is over-represented, which biases the results.</sub>
 
-<img src="graphique_dispersion.png" width="100%" alt="Predictions of the eight models for the same image, around the true gaze position: most strategies land close to the target, MC Dropout 0.25 lands far to the right.">
+**Conclusion.** In this precise context, active learning strategies do not prove better than random selection, which wins almost every time: the starting hypothesis is not confirmed.
 
 ## In this repository
 
@@ -74,9 +139,11 @@ For reference, a prediction drawn completely at random is 772 px off on average 
 | `IA_training/analyze_final.py` | Comparison charts across strategies (`FULL_1_MOYENNES.png`, `FULL_2_DISTRIBUTIONS.png`, `FULL_3_ROBUSTESSE.png`). |
 | `analyze_bias.py`, `visualize_dispersion.py`, `compare_predictions_ratio50.py` | Spatial and identity biases, predictions of every model on the same image. |
 | `dummy_test.py`, `diagnostic.py`, `get_training_time.py` | Random-guess baseline, domain gap check, training times. |
-| `DataCollection/`, `DataProcessing/`, `processed_frames/` | Recording (a point bounces across the screen while the webcam films the face) and the extracted frames. |
+| `DataCollection/`, `DataProcessing/`, `processed_frames/` | Recording (the bouncing point and the webcam) and the extracted frames. |
 | `IA_training/best_models_*` | The best model saved at each step, for each strategy. |
 | `Notes.txt`, [`README.fr.md`](README.fr.md) | My working notes and the original README, in French. |
+
+The branch `main` holds the shared dataset; `Arthur` and `Suzanne` hold the other two studies.
 
 ## Run it
 
@@ -89,14 +156,14 @@ python split_folders.py
 
 # 2. Train one strategy (writes best_models_<strategy>/ and resultats_<strategy>.csv)
 cd IA_training
-python mixedTraining.py
+python clusteringTraining.py
 
 # 3. Compare the strategies
 python analyze_final.py
 ```
 
-A CUDA GPU is strongly advised; the scripts fall back to the CPU otherwise.
+A CUDA GPU is strongly advised; the scripts fall back to the CPU otherwise. The repository weighs about 7 GB because of the saved models.
 
 ## Credits
 
-Course project at ENSIM / Le Mans Université, supervised by Meysam Shamsi. Dataset recorded with Arthur Lecureur and Suzanne G-C; the other studies are on the `Arthur` and `Suzanne` branches. The full history comes from the original repository, [Lecureur-Arthur/ActiveLearning](https://github.com/Lecureur-Arthur/ActiveLearning). References: Tharwat & Schenck (2023), *A Survey on Active Learning*, Mathematics; Seoh (2020), *Qualitative analysis of Monte Carlo dropout*, arXiv.
+Final-year course project at ENSIM / Le Mans Université, supervised by Meysam Shamsi. Dataset recorded with Arthur Lecureur and Suzanne G-C. The full history comes from the original repository, [Lecureur-Arthur/ActiveLearning](https://github.com/Lecureur-Arthur/ActiveLearning). References: Tharwat & Schenck (2023), *A Survey on Active Learning*, Mathematics; Seoh (2020), *Qualitative analysis of Monte Carlo dropout*, arXiv.
