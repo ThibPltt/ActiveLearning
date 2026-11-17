@@ -213,3 +213,9 @@ Final-year course project at ENSIM / Le Mans Université, supervised by Meysam S
 ## Licence
 
 Released under the [MIT licence](LICENSE).
+
+<details>
+<summary>🇫🇷 En bref</summary>
+
+Prédire où une personne regarde sur l’écran avec une simple caméra d’ordinateur, en choisissant par apprentissage actif les images utiles à l’entraînement (Python, PyTorch, ResNet-18). Projet de cours de dernière année à l’ENSIM (2026) : le jeu de données a été enregistré en équipe de 3, puis chacun a mené sa propre étude. Fiche complète sur [thibautplatet.com](https://thibautplatet.com/projets/active-learning.html).
+</details>
