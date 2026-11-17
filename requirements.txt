@@ -1,0 +1,14 @@
+# Python 3.10 or later; a CUDA GPU is strongly advised
+torch>=2.1
+torchvision>=0.16
+transformers>=4.38
+scikit-learn>=1.3
+scipy>=1.11
+numpy>=1.26
+pandas>=2.1
+matplotlib>=3.8
+seaborn>=0.13
+pillow>=10.0
+tqdm>=4.66
+opencv-python>=4.8   # DataProcessing: cutting the videos into frames
+pygame>=2.5          # DataCollection: the bouncing point

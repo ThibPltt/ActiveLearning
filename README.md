@@ -191,10 +191,9 @@ The branch `main` holds the shared dataset; `Arthur` and `Suzanne` hold the othe
 ## Run it
 
 ```bash
-pip install torch torchvision transformers scikit-learn matplotlib seaborn pandas tqdm pillow
+pip install -r requirements.txt
 
-# 1. Build the splits: set project_root at the top of split_folders.py to your clone,
-#    it creates FINAL_DATASET/ next to the repository from processed_frames/
+# 1. Build the splits: creates FINAL_DATASET/ next to the repository from processed_frames/
 python split_folders.py
 
 # 2. Train one strategy (writes best_models_<strategy>/ and resultats_<strategy>.csv)
@@ -210,3 +209,7 @@ A CUDA GPU is strongly advised; the scripts fall back to the CPU otherwise. The 
 ## Credits
 
 Final-year course project at ENSIM / Le Mans Université, supervised by Meysam Shamsi. Dataset recorded with Arthur Lecureur and Suzanne G-C. The full history comes from the original repository, [Lecureur-Arthur/ActiveLearning](https://github.com/Lecureur-Arthur/ActiveLearning). References: Tharwat & Schenck (2023), *A Survey on Active Learning*, Mathematics; Seoh (2020), *Qualitative analysis of Monte Carlo dropout*, arXiv.
+
+## Licence
+
+Released under the [MIT licence](LICENSE).

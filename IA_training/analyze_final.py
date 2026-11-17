@@ -40,7 +40,10 @@ PATHS = {
 # 1. SETUP DONNÉES
 # ==========================================
 
-dataset_dir = Path(r"C:\Users\Megaport\Desktop\PROJET_AL\FINAL_DATASET")
+# FINAL_DATASET est cherché à côté du dépôt ou dedans, comme dans les scripts d'entraînement
+_script_dir = Path(__file__).resolve().parent
+dataset_dir = next((p / "FINAL_DATASET" for p in (_script_dir.parent, _script_dir.parent.parent)
+                    if (p / "FINAL_DATASET").exists()), _script_dir.parent.parent / "FINAL_DATASET")
 if not dataset_dir.exists():
     print("ERREUR : Dataset introuvable.")
     sys.exit()

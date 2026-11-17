@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Dataset split, created next to the repository by split_folders.py
+FINAL_DATASET/
+
+# Editors
+.vscode/
+.idea/

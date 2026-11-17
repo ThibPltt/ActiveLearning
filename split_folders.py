@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import random
 from pathlib import Path
@@ -10,7 +11,9 @@ from tqdm import tqdm
 
 # Objectif : Diviser les images en Train/Test/AL pour les Domaines A et B
 
-project_root = Path(r"C:\Users\Megaport\Desktop\PROJET_AL\ActiveLearning")
+# Racine du dépôt : le dossier de ce script.
+# Autre emplacement : python split_folders.py <chemin-du-dépôt>
+project_root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parent
 
 source_dir = project_root / "processed_frames"
 dest_root = project_root.parent / "FINAL_DATASET"
